@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: boat-app-backend
+
+  # Default active profile — override via env var SPRING_PROFILES_ACTIVE in production
+  profiles:
+    active: dev
+
+  # JPA — conservative defaults for production
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+  # Jackson — serialize dates as ISO-8601 strings, not arrays
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# Actuator — expose relevant endpoints; details restricted in production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      # Production: status only (no sensitive infrastructure details)
+      show-details: never
+
