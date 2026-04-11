@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+
+// ─── M3 Theme definition ─────────────────────────────────────────────────────
+// Available M3 tonal palettes: red, green, blue, yellow, cyan, magenta,
+// orange, chartreuse, spring-green, azure, violet, rose
+// primary: violet (closest to indigo)
+// tertiary: cyan (closest to teal)
+$boat-app-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary:   mat.$violet-palette,
+    tertiary:  mat.$cyan-palette,
+  ),
+  typography: (
+    brand-family: 'Roboto, sans-serif',
+    plain-family: 'Roboto, sans-serif',
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// ─── Apply to html root ───────────────────────────────────────────────────────
+html {
+  @include mat.core();
+  @include mat.all-component-themes($boat-app-theme);
+}

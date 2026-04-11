@@ -1,0 +1,94 @@
+<mat-sidenav-container>
+
+  <!-- Side bar -->
+  <mat-sidenav
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="sidenavOpen()"
+    (openedChange)="sidenavOpen.set($event)">
+
+    <div class="sidenav-inner">
+
+      <!-- Brand header -->
+      <div class="brand-header">
+        <div class="brand-badge">
+          <mat-icon>directions_boat</mat-icon>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">{{ t().app.title }}</span>
+          <span class="brand-tagline">{{ t().app.tagline }}</span>
+        </div>
+      </div>
+
+      <mat-divider />
+
+      <!-- Navigation -->
+      <nav class="nav-section">
+        <span class="nav-section-label">{{ t().app.nav.sectionLabel }}</span>
+
+        <mat-nav-list>
+          <a mat-list-item
+             routerLink="/home"
+             #rlaHome="routerLinkActive"
+             routerLinkActive
+             [activated]="rlaHome.isActive"
+             [matTooltip]="t().app.nav.home"
+             matTooltipPosition="right"
+             matTooltipShowDelay="600">
+            <mat-icon matListItemIcon>home</mat-icon>
+            <span matListItemTitle>{{ t().app.nav.home }}</span>
+          </a>
+        </mat-nav-list>
+      </nav>
+
+      <!-- Push footer to bottom -->
+      <span class="flex-spacer"></span>
+
+      <mat-divider />
+
+      <!-- Sidebar footer -->
+      <div class="sidenav-footer">
+        <mat-icon class="footer-icon">anchor</mat-icon>
+        <span class="footer-version">{{ t().app.footer.version }}</span>
+      </div>
+
+    </div>
+  </mat-sidenav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════════════════════════ -->
+  <mat-sidenav-content>
+
+    <!-- Top toolbar — sticky inside the scroll area -->
+    <mat-toolbar class="app-toolbar">
+
+      <!-- Hamburger: switches icon based on state -->
+      <button
+        mat-icon-button
+        class="menu-btn"
+        (click)="toggleSidenav()"
+        [attr.aria-label]="t().app.nav.menuAriaLabel">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <!-- Brand (mobile only) -->
+      @if (isMobile()) {
+        <div class="toolbar-brand">
+          <mat-icon class="toolbar-logo">directions_boat</mat-icon>
+          <span class="toolbar-title">{{ t().app.title }}</span>
+        </div>
+      }
+
+      <span class="flex-spacer"></span>
+
+
+    </mat-toolbar>
+
+    <!-- Page content -->
+    <main class="content-area">
+      <router-outlet />
+    </main>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

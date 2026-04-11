@@ -86,11 +86,11 @@ com.boatapp.backend
 ├── BoatAppApplication.java      # Entry point — @SpringBootApplication + @EnableJpaAuditing
 │
 ├── entity/
-│   ├── Auditable.java           # @MappedSuperclass — createdAt + updatedAt inherited by all entities
+│   ├── Auditable.java           # @MappedSuperclass — createdAt inherited by all entities
 │   └── Boat.java                # JPA entity — extends Auditable
 │
 ├── dto/
-│   └── BoatRecord.java          # Immutable Java record (id, name, description, createdAt, updatedAt)
+│   └── BoatRecord.java          # Immutable Java record (id, name, description, createdAt)
 │
 ├── mapper/
 │   └── BoatMapper.java          # MapStruct interface → generates BoatMapperImpl
@@ -113,3 +113,142 @@ com.boatapp.backend
     ├── AppProfile.java          # Enum of all Spring profiles — single source of truth
     └── OpenApiConfig.java       # GroupedOpenApi per version + global OpenAPI metadata
 ```
+
+---
+
+## Frontend — `boat-app-frontend`
+
+### Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Language | TypeScript (strict mode) |
+| Framework | Angular 20 — standalone components, no NgModules |
+| Change detection | **Zoneless** (`provideZonelessChangeDetection`) — no zone.js |
+| State management | Angular **Signals** + `computed()` — no NgRx |
+| UI components | Angular Material 20 — **Material Design 3 (M3)** |
+| Layout | **Tailwind CSS v3** — mobile-first, custom breakpoints aligned with Material |
+| Styles | SCSS throughout |
+| HTTP | `HttpClient` + functional interceptor |
+| Build | Angular CLI 20 / `@angular/build` (esbuild) |
+| Container | Multi-stage Docker build → nginx:alpine |
+
+### Angular 20 highlights
+
+- **Signals everywhere** — `signal()`, `computed()`, `input()` (new input API, no `@Input()` decorator)
+- **Zoneless** — faster, simpler, no `NgZone` hacks. All change detection is explicit via signals
+- **Standalone components** — no `NgModule` at all; imports are declared per component
+- **`inject()`** — function-based DI, no constructor injection needed in services
+- **New file naming** — Angular CLI 20 generates `feature.ts / feature.html / feature.scss` (no `.component.` suffix)
+
+### Quick start (dev)
+
+```bash
+cd boat-app-frontend
+ng serve
+```
+
+Opens on **http://localhost:4200** with live reload.
+
+| URL | Description |
+|-----|-------------|
+| `/home` | Home page with signal-based click counter |
+| `/` | Redirects to `/home` |
+
+### Build
+
+```bash
+# Dev build
+ng build
+
+# Production build
+npm run build
+# equivalent to: ng build --configuration=production
+```
+
+### Run with Docker
+
+```bash
+cd boat-app-frontend
+docker build -t boat-app-frontend .
+docker run -p 80:80 -e API_URL=http://my-api/api/v1 boat-app-frontend
+```
+
+The `API_URL` env var is injected into `environment.prod.ts` at runtime.
+
+### Mobile-first conventions
+
+Every component follows **mobile-first** Tailwind:
+
+```html
+<!-- ✅ correct: base styles for mobile, override at sm/md/lg -->
+<div class="flex-col sm:flex-row p-4 md:p-6 w-full md:max-w-lg">
+```
+
+Minimum interactive tap target: **48 × 48 px** (`min-h-12` Tailwind class).
+
+### Tailwind breakpoints
+
+Custom breakpoints in `tailwind.config.js` **aligned with Angular Material**:
+
+| Tailwind prefix | px | Angular Material equivalent |
+|-----------------|-----|------------------------------|
+| _(base)_ | 0–599 | Handset / XSmall |
+| `sm:` | 600px | Small |
+| `md:` | 960px | Medium |
+| `lg:` | 1280px | Large |
+| `xl:` | 1920px | XLarge |
+
+### Project structure
+
+```
+src/
+├── app/
+│   ├── core/
+│   │   ├── interceptors/
+│   │   │   └── http-error.interceptor.ts  # Functional HTTP error interceptor
+│   │   └── services/
+│   │       └── api.service.ts             # Base HTTP service (generic get/post/put/delete)
+│   │
+│   ├── features/
+│   │   └── home/
+│   │       ├── home.ts                    # Lazy-loaded home page with signal counter
+│   │       ├── home.html
+│   │       └── home.scss
+│   │
+│   ├── shared/
+│   │   ├── components/
+│   │   │   └── page-header/
+│   │   │       ├── page-header.ts         # Reusable header — input.required<string>()
+│   │   │       ├── page-header.html
+│   │   │       └── page-header.scss
+│   │   └── models/
+│   │       └── api-error.model.ts         # ApiError interface — mirrors backend error envelope
+│   │
+│   ├── app.ts                             # App shell — toolbar + responsive sidenav
+│   ├── app.html
+│   ├── app.config.ts                      # provideZonelessChangeDetection + routes + http
+│   └── app.routes.ts                      # Lazy-loaded routes
+│
+├── environments/
+│   ├── environment.ts                     # dev: apiUrl = http://localhost:8080/api/v1
+│   └── environment.prod.ts               # prod: apiUrl = ${API_URL} (injected at runtime)
+│
+├── styles/
+│   ├── _material-theme.scss              # M3 theme — violet primary, cyan tertiary
+│   └── _variables.scss                   # SCSS design tokens
+│
+└── styles.scss                            # Entry: @use material-theme → @tailwind → globals
+```
+
+### Adding a new feature
+
+1. Create `src/app/features/my-feature/my-feature.ts` (standalone component)
+2. Add a lazy route in `app.routes.ts`:
+   ```ts
+   { path: 'my-feature', loadComponent: () => import('./features/my-feature/my-feature').then(m => m.MyFeatureComponent) }
+   ```
+3. Add a nav link in `app.html` inside `<mat-nav-list>`
+4. (Optional) Add a feature service in `src/app/features/my-feature/my-feature.service.ts`
+
+

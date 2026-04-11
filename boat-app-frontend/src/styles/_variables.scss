@@ -1,0 +1,15 @@
+// ─── Design tokens ──────────────────────────────────────────────────────────
+// These SCSS variables mirror the Material M3 theme tokens for use outside
+// Angular Material components (e.g. plain HTML or Tailwind utilities).
+
+$color-primary:   #3f51b5; // indigo
+$color-secondary: #009688; // teal
+$color-surface:   #ffffff;
+$color-on-surface: #1c1b1f;
+
+// Spacing scale (aligned with Tailwind's default scale)
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-4: 1rem;
+$space-6: 1.5rem;
+$space-8: 2rem;

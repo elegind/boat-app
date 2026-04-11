@@ -1,0 +1,28 @@
+// ─── @use rules MUST come first (SCSS spec) ─────────────────────────────────
+// 1. Angular Material M3 theme tokens
+@use './styles/material-theme' as *;
+// 2. App design tokens (SCSS variables only — no CSS output)
+@use './styles/variables' as vars;
+
+// ─── Icon font — loaded locally via npm (no CDN dependency) ─────────────────
+// material-icons package ships the woff2 files and a ready-made CSS entry point.
+// This is the primary icon source; index.html Google Fonts link is a CDN backup.
+@import 'material-icons/iconfont/material-icons.css';
+
+// ─── Tailwind directives ─────────────────────────────────────────────────────
+// NOTE: preflight (base CSS reset) is DISABLED in tailwind.config.js
+// to avoid conflicts with Angular Material's own normalisation.
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ─── Global styles ───────────────────────────────────────────────────────────
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  // Prevent double scrollbars — the mat-sidenav-content handles its own scroll
+  overflow: hidden;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}

@@ -1,0 +1,183 @@
+// ── Host & container ─────────────────────────────────────────────────────────
+:host {
+  display: block;
+  height: 100vh;
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
+// ── Sidebar panel ─────────────────────────────────────────────────────────────
+mat-sidenav {
+  width: 264px;
+  border-right: none !important; // replaced by the container's own shadow
+}
+
+// ── Sidenav inner flex layout ─────────────────────────────────────────────────
+.sidenav-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--mat-sys-surface-container-low);
+}
+
+.flex-spacer {
+  flex: 1;
+}
+
+// ── Brand header ──────────────────────────────────────────────────────────────
+// Height matches the toolbar (64px) so the mat-divider below aligns with
+// the toolbar's bottom border — both separators sit on the same horizontal line.
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 63px;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  // Gradient using M3 primary → tertiary
+  background: linear-gradient(
+    145deg,
+    var(--mat-sys-primary, #6750a4) 0%,
+    var(--mat-sys-tertiary, #006a6a) 100%
+  );
+  box-shadow:
+    0 4px 10px color-mix(in srgb, var(--mat-sys-primary, #6750a4) 35%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+
+  mat-icon {
+    color: #fff;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.brand-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // prevent overflow
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mat-sys-on-surface, #1c1b1f);
+}
+
+.brand-tagline {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  margin-top: 1px;
+  letter-spacing: 0.1px;
+}
+
+// ── Navigation section ────────────────────────────────────────────────────────
+.nav-section {
+  padding: 4px 0;
+}
+
+.nav-section-label {
+  display: block;
+  padding: 16px 20px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  opacity: 0.75;
+}
+
+// ── Sidebar footer ────────────────────────────────────────────────────────────
+.sidenav-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+}
+
+.footer-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  opacity: 0.5;
+}
+
+.footer-version {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  opacity: 0.5;
+  letter-spacing: 0.2px;
+}
+
+// ── Top toolbar ───────────────────────────────────────────────────────────────
+.app-toolbar {
+  // Override Material's default primary colour → clean white surface toolbar
+  background-color: var(--mat-sys-surface, #fffbfe) !important;
+  color: var(--mat-sys-on-surface, #1c1b1f) !important;
+  border-bottom: 1px solid var(--mat-sys-outline-variant, #cac4d0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0 8px !important;
+
+  // Elevation lift on scroll (via a second shadow layer)
+  &.elevated {
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  }
+}
+
+.menu-btn {
+  // Slightly muted so it doesn't compete with page content
+  color: var(--mat-sys-on-surface-variant, #49454f) !important;
+}
+
+// Mobile brand (inside toolbar)
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 2px;
+}
+
+.toolbar-logo {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: var(--mat-sys-primary, #6750a4) !important;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface, #1c1b1f);
+  white-space: nowrap;
+}
+
+
+// ── Page content area ─────────────────────────────────────────────────────────
+.content-area {
+  background-color: var(--mat-sys-surface, #fffbfe);
+  min-height: calc(100% - 64px);
+}
