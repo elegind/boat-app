@@ -1,0 +1,62 @@
+services:
+
+  # ─── Auth Mock ───────────────────────────────────────────────────────────────
+  # Placeholder — will be replaced when the real auth module is implemented.
+  auth-mock:
+    build:
+      context: ./boat-app-auth-mock
+      dockerfile: Dockerfile
+    container_name: boat-app-auth-mock
+    ports:
+      - "9000:9000"
+    networks:
+      - boat-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "echo ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ─── Backend ─────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./boat-app-backend
+      dockerfile: Dockerfile
+    container_name: boat-app-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      TZ: UTC
+    depends_on:
+      auth-mock:
+        condition: service_healthy
+    networks:
+      - boat-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─── Frontend ────────────────────────────────────────────────────────────────
+  # Angular app served by nginx. nginx proxies /api/ → backend, /auth/ → auth-mock.
+  frontend:
+    build:
+      context: ./boat-app-frontend
+      dockerfile: Dockerfile
+    container_name: boat-app-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - boat-network
+
+networks:
+  boat-network:
+    driver: bridge
+

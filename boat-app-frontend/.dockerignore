@@ -3,4 +3,5 @@ dist/
 .git/
 .angular/
 *.log
+*.md
 
