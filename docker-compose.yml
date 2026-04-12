@@ -18,6 +18,27 @@ services:
       retries: 3
       start_period: 5s
 
+  # ─── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: boat-app-postgres
+    environment:
+      POSTGRES_DB: boatdb
+      POSTGRES_USER: boat
+      POSTGRES_PASSWORD: boat
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - boat-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boat -d boatdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # ─── Backend ─────────────────────────────────────────────────────────────────
   backend:
     build:
@@ -28,9 +49,15 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/boatdb
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      POSTGRES_USER: boat
+      POSTGRES_PASSWORD: boat
       TZ: UTC
     depends_on:
       auth-mock:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - boat-network
@@ -60,3 +87,5 @@ networks:
   boat-network:
     driver: bridge
 
+volumes:
+  postgres_data:
