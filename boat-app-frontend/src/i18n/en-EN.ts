@@ -20,12 +20,27 @@ export const EN_EN = {
       subtitle: 'Manage your fleet of boats.',
     },
     card: {
-      title: 'Hello World',
       body: 'This is the home page of the Boat App.',
-      button: {
-        idle: 'Click me!',
-      },
     },
+  },
+  boats: {
+    list: {
+      title: 'All Boats',
+    },
+    card: {
+      viewDetail: 'View detail',
+      edit: 'Edit',
+      delete: 'Delete',
+    },
+    detail: {
+      title: 'Boat details',
+      name: 'Name',
+      description: 'Description',
+      createdAt: 'Created at',
+      close: 'Close',
+    },
+    empty: 'No boats found',
+    loading: 'Loading boats...',
   },
 };
 

@@ -27,4 +27,3 @@ management:
     health:
       # Production: status only (no sensitive infrastructure details)
       show-details: never
-

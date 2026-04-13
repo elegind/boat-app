@@ -7,6 +7,12 @@ import java.util.Arrays;
 /**
  * Single source of truth for every Spring profile name used in the application.
  *
+ * <p>Use {@link AppProfile#DEV} / {@link AppProfile#PROD} in calls to
+ * {@link #isActive(Environment)} to avoid hardcoding profile name strings.
+ *
+ * <pre>{@code
+ * AppProfile.DEV.isActive(environment)
+ * }</pre>
  */
 public enum AppProfile {
 

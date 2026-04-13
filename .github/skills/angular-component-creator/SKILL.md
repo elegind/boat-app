@@ -38,8 +38,30 @@ export class [Name]Component {
 
 ## Step 4 — Add translation keys first
 Before writing any template HTML, add all required keys to
-src/assets/i18n/en-EN.json. Then reference them in the template.
+src/i18n/en-EN.ts  (TypeScript const — NOT a JSON file).
+
+Add new keys under the matching feature namespace:
+```typescript
+export const EN_EN = {
+  // ...existing keys...
+  featureName: {
+    someLabel: 'My label',
+  },
+};
+```
+
+Then inject `TranslationService` in the component:
+```typescript
+protected readonly t = inject(TranslationService).t;
+```
+
+And reference keys in the template:
+```html
+{{ t().featureName.someLabel }}
+```
+
 Never write a label, title or button text without a translation key.
+Never use the `translate` pipe — use `t()` signal accessor only.
 
 ## Step 5 — Write mobile-first HTML
 Start the layout at 320px, add responsive classes for larger screens.

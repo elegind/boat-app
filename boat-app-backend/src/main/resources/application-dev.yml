@@ -5,11 +5,16 @@ spring:
     username: ${POSTGRES_USER:boat}
     password: ${POSTGRES_PASSWORD:boat}
 
+  sql:
+    init:
+      mode: always        # data.sql is always executed on startup in dev
+
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop       # schema recreated on each restart in dev
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true   # ensures JPA creates schema before data.sql runs
     properties:
       hibernate:
         format_sql: true

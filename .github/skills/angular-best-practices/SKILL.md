@@ -41,17 +41,27 @@ allowed-tools: ["read", "edit", "search/codebase"]
 ## i18n — non-negotiable rule
 Never hardcode any user-visible text in templates or TypeScript.
 Every label, button, title, placeholder, error must be in:
-src/assets/i18n/en-EN.json
+src/i18n/en-EN.ts  (TypeScript const, NOT JSON)
 
-Structure by feature:
-{
-"common": { "save": "Save", "cancel": "Cancel" },
-"boats": { "list.title": "My Boats", "form.name": "Boat name" }
-}
+Structure by feature — nested objects matching component hierarchy:
+```typescript
+export const EN_EN = {
+  common: { save: 'Save', cancel: 'Cancel' },
+  boats: { list: { title: 'My Boats' }, form: { name: 'Boat name' } }
+};
+```
+
+Inject `TranslationService` in every component that needs labels:
+```typescript
+protected readonly t = inject(TranslationService).t;
+```
 
 Usage:
-Template:    {{ 'boats.list.title' | translate }}
-TypeScript:  this.translateService.instant('common.error')
+Template:    {{ t().boats.list.title }}
+TypeScript:  this.t().common.save
+
+Never use a `translate` pipe — the project uses a signal-based
+TranslationService, not ngx-translate.
 
 ## Mobile-first responsive (mandatory)
 - Design at 320px first — then scale up with Tailwind prefixes

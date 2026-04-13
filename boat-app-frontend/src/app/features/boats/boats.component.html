@@ -1,0 +1,37 @@
+<app-page-header [title]="t().boats.list.title" />
+
+<!-- Loading spinner -->
+@if (isLoading()) {
+  <div class="flex justify-center items-center py-16">
+    <mat-spinner [diameter]="48" [attr.aria-label]="t().boats.loading" />
+  </div>
+}
+
+<!-- Empty state -->
+@if (!isLoading() && boats().length === 0) {
+  <div class="flex justify-center items-center py-16 text-gray-500 text-base">
+    {{ t().boats.empty }}
+  </div>
+}
+
+<!-- Boat cards grid -->
+@if (!isLoading() && boats().length > 0) {
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 pb-4">
+    @for (boat of boats(); track boat.id) {
+      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" />
+    }
+  </div>
+}
+
+<!-- Paginator -->
+<div class="flex justify-center px-4 pt-2">
+  <mat-paginator
+    [length]="totalElements()"
+    [pageSize]="pageSize()"
+    [pageIndex]="currentPage()"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons />
+</div>
+
+

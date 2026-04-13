@@ -1,0 +1,36 @@
+<mat-card class="boat-card h-full flex flex-col">
+  <!-- Top: emoji + name -->
+  <mat-card-content class="flex flex-col items-center justify-center flex-1 pt-6 pb-4">
+    <span class="text-5xl" role="img" aria-label="boat">🚢</span>
+    <h3 class="text-lg font-semibold text-center mt-3 leading-tight">{{ boat().name }}</h3>
+  </mat-card-content>
+
+  <!-- Bottom: action icons -->
+  <mat-card-actions class="flex justify-center gap-1 pb-3">
+    <button
+      mat-icon-button
+      [attr.aria-label]="t().boats.card.viewDetail"
+      [matTooltip]="t().boats.card.viewDetail"
+      (click)="viewDetail.emit(boat())">
+      <mat-icon>visibility</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      [attr.aria-label]="t().boats.card.edit"
+      [matTooltip]="t().boats.card.edit"
+      disabled>
+      <mat-icon>edit</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      [attr.aria-label]="t().boats.card.delete"
+      [matTooltip]="t().boats.card.delete"
+      disabled>
+      <mat-icon>delete</mat-icon>
+    </button>
+  </mat-card-actions>
+</mat-card>
+
+

@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>{{ t().boats.detail.title }}</h2>
+
+<mat-dialog-content>
+  <dl class="flex flex-col gap-4 py-2">
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {{ t().boats.detail.name }}
+      </dt>
+      <dd class="mt-1 text-base">{{ data.boat.name }}</dd>
+    </div>
+
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {{ t().boats.detail.description }}
+      </dt>
+      <dd class="mt-1 text-base">{{ data.boat.description || '—' }}</dd>
+    </div>
+
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {{ t().boats.detail.createdAt }}
+      </dt>
+      <dd class="mt-1 text-base">{{ data.boat.createdAt | date: 'medium' : 'UTC' }}</dd>
+    </div>
+  </dl>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="dialogRef.close()">
+    {{ t().boats.detail.close }}
+  </button>
+</mat-dialog-actions>
+

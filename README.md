@@ -1,5 +1,21 @@
 # boat-app
-A small but complete fullstack web application allowing authenticated users to manage a fleet of boats.
+A fullstack web application for managing a fleet of boats.
+
+---
+
+## Architecture
+
+```
+docker-compose up --build
+       │
+       ├─ auth-mock  (port 9000) — placeholder, ready to be replaced
+       ├─ postgres   (port 5432) — PostgreSQL 16
+       ├─ backend    (port 8080) — Spring Boot 3 REST API
+       └─ frontend   (port 4200) — Angular 20 served by nginx
+```
+
+Startup order enforced by `depends_on` + healthchecks:
+`auth-mock → postgres → backend → frontend`
 
 ---
 
@@ -7,69 +23,81 @@ A small but complete fullstack web application allowing authenticated users to m
 
 ### Tech stack
 
-| Layer | Technology                                                         |
-|-------|--------------------------------------------------------------------|
-| Language | Java 25                                                            |
-| Framework | Spring Boot 3.4.x                                                  |
-| Persistence | Spring Data JPA + Hibernate + H2 (dev)                             |
-| Mapping | MapStruct 1.6.3                                                    |
-| Boilerplate | Lombok                                                             |
-| Security | Spring Security (permit-all, extensible)                           |
+| Layer | Technology |
+|-------|------------|
+| Language | Java 25 |
+| Framework | Spring Boot 3.4.x |
+| Persistence | Spring Data JPA + Hibernate + PostgreSQL |
+| Mapping | MapStruct 1.6.3 |
+| Boilerplate | Lombok |
+| Security | Spring Security (permit-all, extensible) |
 | API docs | SpringDoc OpenAPI / Swagger UI — multi-version via `GroupedOpenApi` |
-| Observability | Spring Boot Actuator                                               |
-| Build | Maven 3.9+                                                         |
+| Observability | Spring Boot Actuator |
+| Build | Maven 3.9+ |
 
 ### Quick start (dev profile)
+
+**Prerequisites:** a PostgreSQL instance running on `localhost:5432` with database `boatdb`, user/password `boat`.
+The easiest way is to start only postgres via Docker:
+
+```bash
+docker-compose up postgres
+```
+
+Then start the backend:
 
 ```bash
 cd boat-app-backend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-The app starts on **http://localhost:8080** with an H2 in-memory database.
+The app starts on **http://localhost:8080** and seeds 10 boats via `data.sql` on every startup (dev only).
 
 | URL | Description |
 |-----|-------------|
+| `GET /api/v1/boats` | Paginated list of boats (`?page=0&size=5`) |
 | `GET /api/v1/boats/hello` | Smoke-test endpoint — returns 200 |
 | `GET /actuator/health` | Health check (full details in dev) |
 | `GET /swagger-ui.html` | Interactive Swagger UI (version dropdown top-right) |
-| `GET /swagger-ui.html?urls.primaryName=v1` | Swagger UI pre-selected on v1 |
 | `GET /v3/api-docs/v1` | Raw OpenAPI JSON spec for v1 |
-| `GET /v3/api-docs.yaml` | Full OpenAPI YAML spec |
-| `GET /h2-console` | H2 browser console (dev only) |
 
-### Build
+### Build & tests
 
 ```bash
-# Compile + run tests
-mvn clean verify
+# Unit tests only (BoatControllerTest + BoatServiceTest) — no DB needed, safe in Docker
+mvn clean package
 
-# Package without tests (CI fast path)
-mvn clean package -DskipTests
+# Full suite: unit tests + BoatRepositoryIT (Testcontainers — requires Docker)
+mvn clean verify
 ```
 
-MapStruct generates `BoatMapperImpl` in `target/generated-sources/annotations/` during the `compile` phase.
+MapStruct generates `BoatMapperImpl` in `target/generated-sources/annotations/` during `compile`.
+
+> **Test split:** unit tests run via `maven-surefire-plugin`; integration tests (`*IT.java`)
+> run via `maven-failsafe-plugin` only during the `verify` phase. The Dockerfile uses
+> `mvn clean package` so the Docker build never needs Docker-in-Docker.
 
 ### Profile strategy
 
 | Profile | Database | DDL | SQL logging | Health details |
 |---------|----------|-----|-------------|----------------|
-| `dev` (default) | H2 in-memory | `create-drop` | `true` | `always` |
+| `dev` (default) | PostgreSQL (localhost / Docker) | `create-drop` + `data.sql` | `true` | `always` |
 | `prod` | Configured via env vars | `validate` | `false` | `never` |
 
 All profile names are centralised in `AppProfile` enum — no raw strings scattered in the code.
 
+**Dev credentials** use `${ENV_VAR:default}` — override with environment variables.
+**Prod credentials** use `${ENV_VAR}` — no defaults, no hardcoding.
+
 Switch profile at runtime:
+
 ```bash
-# As JVM arg
+# JVM arg
 java -jar boat-app-backend.jar --spring.profiles.active=prod
 
-# Via environment variable (Docker / Kubernetes friendly)
+# Environment variable (Docker / Kubernetes friendly)
 SPRING_PROFILES_ACTIVE=prod java -jar boat-app-backend.jar
 ```
-
-> **Cloud readiness** — all sensitive production values (datasource URL, credentials, etc.)
-> must be injected via environment variables. No secrets are hardcoded.
 
 ### Adding a new API version
 
@@ -86,8 +114,8 @@ com.boatapp.backend
 ├── BoatAppApplication.java      # Entry point — @SpringBootApplication + @EnableJpaAuditing
 │
 ├── entity/
-│   ├── Auditable.java           # @MappedSuperclass — createdAt inherited by all entities
-│   └── Boat.java                # JPA entity — extends Auditable
+│   ├── Auditable.java           # @MappedSuperclass — createdAt (Instant, UTC) for all entities
+│   └── Boat.java                # JPA entity — extends Auditable, index on created_at DESC
 │
 ├── dto/
 │   └── BoatRecord.java          # Immutable Java record (id, name, description, createdAt)
@@ -96,18 +124,18 @@ com.boatapp.backend
 │   └── BoatMapper.java          # MapStruct interface → generates BoatMapperImpl
 │
 ├── repository/
-│   └── BoatRepository.java      # Spring Data JPA repository (CRUD + pagination)
+│   └── BoatRepository.java      # Spring Data JPA (JpaRepository — pagination built-in)
 │
 ├── service/
-│   ├── IBoatService.java        # Interface (contract) — controllers depend on this
-│   └── BoatServiceImpl.java     # Default implementation — throws 404 ResponseStatusException
+│   ├── IBoatService.java        # Interface — controllers depend on this, not the impl
+│   └── BoatServiceImpl.java     # findAll(page, size) — sorted by createdAt DESC
 │
 ├── controller/
-│   ├── BoatControllerV1.java        # @RestController /api/v1/boats
+│   ├── BoatControllerV1.java        # @RestController /api/v1/boats — GET list + GET hello
 │   └── GlobalExceptionHandler.java  # @RestControllerAdvice — uniform JSON error envelope
 │
 ├── security/
-│   └── SecurityConfig.java      # Permit-all, CSRF disabled, stateless session, H2 frames
+│   └── SecurityConfig.java      # Permit-all, CSRF disabled, stateless
 │
 └── config/
     ├── AppProfile.java          # Enum of all Spring profiles — single source of truth
@@ -135,11 +163,11 @@ com.boatapp.backend
 
 ### Angular 20 highlights
 
-- **Signals everywhere** — `signal()`, `computed()`, `input()` (new input API, no `@Input()` decorator)
-- **Zoneless** — faster, simpler, no `NgZone` hacks. All change detection is explicit via signals
-- **Standalone components** — no `NgModule` at all; imports are declared per component
-- **`inject()`** — function-based DI, no constructor injection needed in services
-- **New file naming** — Angular CLI 20 generates `feature.ts / feature.html / feature.scss` (no `.component.` suffix)
+- **Signals everywhere** — `signal()`, `computed()`, `input()`, `output()` (no `@Input()`/`@Output()`)
+- **Zoneless** — faster, simpler, no `NgZone` hacks; all change detection is explicit via signals
+- **Standalone components** — no `NgModule`; imports declared per component
+- **`inject()`** — function-based DI, no constructor injection needed
+- **New file naming** — Angular CLI 20 generates `feature.ts / feature.html / feature.scss`
 
 ### Quick start (dev)
 
@@ -152,44 +180,39 @@ Opens on **http://localhost:4200** with live reload.
 
 | URL | Description |
 |-----|-------------|
-| `/home` | Home page with signal-based click counter |
 | `/` | Redirects to `/home` |
+| `/home` | Paginated grid of boat cards loaded from the API |
 
 ### Build
 
 ```bash
-# Dev build
-ng build
-
-# Production build
 npm run build
 # equivalent to: ng build --configuration=production
 ```
 
-### Run with Docker
+### Run with Docker (standalone)
 
 ```bash
 cd boat-app-frontend
 docker build -t boat-app-frontend .
-docker run -p 80:80 -e API_URL=http://my-api/api/v1 boat-app-frontend
+docker run -p 80:80 boat-app-frontend
+# open http://localhost
 ```
-
-The `API_URL` env var is injected into `environment.prod.ts` at runtime.
 
 ### Mobile-first conventions
 
 Every component follows **mobile-first** Tailwind:
 
 ```html
-<!-- ✅ correct: base styles for mobile, override at sm/md/lg -->
-<div class="flex-col sm:flex-row p-4 md:p-6 w-full md:max-w-lg">
+<!-- ✅ correct: base = mobile, then override at sm/md/lg -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 ```
 
-Minimum interactive tap target: **48 × 48 px** (`min-h-12` Tailwind class).
+Minimum interactive tap target: **48 × 48 px** (`mat-icon-button` enforces this by default).
 
 ### Tailwind breakpoints
 
-Custom breakpoints in `tailwind.config.js` **aligned with Angular Material**:
+Aligned with Angular Material in `tailwind.config.js`:
 
 | Tailwind prefix | px | Angular Material equivalent |
 |-----------------|-----|------------------------------|
@@ -208,47 +231,85 @@ src/
 │   │   ├── interceptors/
 │   │   │   └── http-error.interceptor.ts  # Functional HTTP error interceptor
 │   │   └── services/
-│   │       └── api.service.ts             # Base HTTP service (generic get/post/put/delete)
+│   │       ├── api.service.ts             # Base HTTP service (generic get<T>)
+│   │       ├── boat.service.ts            # getBoats(page, size) → Observable<Page<Boat>>
+│   │       └── translation.service.ts    # Signal-based i18n — setLocale() for runtime switch
 │   │
 │   ├── features/
-│   │   └── home/
-│   │       ├── home.ts                    # Lazy-loaded home page with signal counter
-│   │       ├── home.html
-│   │       └── home.scss
+│   │   └── boats/
+│   │       ├── boats.component.ts         # Main list — signals, pagination, dialog opener
+│   │       ├── boats.component.html       # Grid + spinner + paginator + page-size selector
+│   │       └── components/
+│   │           ├── boat-card/             # 🚢 emoji + name + eye/edit/delete icons
+│   │           └── boat-detail-dialog/    # MatDialog — name, description, createdAt (UTC)
 │   │
 │   ├── shared/
 │   │   ├── components/
-│   │   │   └── page-header/
-│   │   │       ├── page-header.ts         # Reusable header — input.required<string>()
-│   │   │       ├── page-header.html
-│   │   │       └── page-header.scss
+│   │   │   └── page-header/              # Reusable header — input.required<string>()
 │   │   └── models/
-│   │       └── api-error.model.ts         # ApiError interface — mirrors backend error envelope
+│   │       ├── api-error.model.ts        # ApiError — mirrors backend JSON error envelope
+│   │       ├── boat.model.ts             # Boat { id, name, description, createdAt }
+│   │       └── page.model.ts             # Page<T> — Spring Data Page response shape
 │   │
-│   ├── app.ts                             # App shell — toolbar + responsive sidenav
+│   ├── app.ts                            # App shell — toolbar + responsive M3 sidenav
 │   ├── app.html
-│   ├── app.config.ts                      # provideZonelessChangeDetection + routes + http
-│   └── app.routes.ts                      # Lazy-loaded routes
+│   ├── app.config.ts                     # provideZonelessChangeDetection + routes + http
+│   └── app.routes.ts                     # '' → /home, /home → BoatsComponent (lazy)
 │
 ├── environments/
-│   ├── environment.ts                     # dev: apiUrl = http://localhost:8080/api/v1
-│   └── environment.prod.ts               # prod: apiUrl = ${API_URL} (injected at runtime)
+│   ├── environment.ts                    # dev:  apiUrl = http://localhost:8080/api/v1
+│   └── environment.prod.ts              # prod: apiUrl = ${API_URL}
+│
+├── i18n/
+│   └── en-EN.ts                          # All UI labels — single source of truth
 │
 ├── styles/
-│   ├── _material-theme.scss              # M3 theme — violet primary, cyan tertiary
-│   └── _variables.scss                   # SCSS design tokens
+│   ├── _material-theme.scss             # M3 theme — indigo primary, teal secondary
+│   └── _variables.scss                  # SCSS design tokens
 │
-└── styles.scss                            # Entry: @use material-theme → @tailwind → globals
+└── styles.scss                           # Entry: material-theme → @tailwind base/components/utilities
 ```
 
 ### Adding a new feature
 
-1. Create `src/app/features/my-feature/my-feature.ts` (standalone component)
+1. Create `src/app/features/my-feature/my-feature.component.ts` (standalone)
 2. Add a lazy route in `app.routes.ts`:
    ```ts
-   { path: 'my-feature', loadComponent: () => import('./features/my-feature/my-feature').then(m => m.MyFeatureComponent) }
+   { path: 'my-feature', loadComponent: () => import('./features/my-feature/my-feature.component').then(m => m.MyFeatureComponent) }
    ```
 3. Add a nav link in `app.html` inside `<mat-nav-list>`
-4. (Optional) Add a feature service in `src/app/features/my-feature/my-feature.service.ts`
+4. Add i18n keys in `src/i18n/en-EN.ts`
+5. (Optional) Add a feature service in `core/services/my-feature.service.ts`
 
+---
 
+## Full stack — Docker Compose
+
+```bash
+# Start everything (auth-mock → postgres → backend → frontend)
+docker-compose up --build
+
+# Stop and keep the postgres volume
+docker-compose down
+
+# Also wipe the database volume
+docker-compose down -v
+```
+
+| Service | Port | Notes |
+|---------|------|-------|
+| frontend | http://localhost:4200 | nginx — proxies `/api/` → backend:8080 |
+| backend | http://localhost:8080 | Spring Boot dev profile |
+| postgres | localhost:5432 | Persistent volume `postgres_data` |
+| auth-mock | localhost:9000 | Placeholder — always healthy |
+
+> **nginx proxy:** all API calls from the browser route through nginx (`/api/` → `backend:8080`)
+> so there are zero CORS issues regardless of environment.
+
+---
+
+## Timestamps
+
+All timestamps use **`Instant` (UTC)**. The JVM is forced to UTC via `-Duser.timezone=UTC`
+in the Docker `ENTRYPOINT`. PostgreSQL stores them as `TIMESTAMP WITH TIME ZONE`.
+The Angular frontend formats them with `DatePipe` using `'UTC'` timezone.
