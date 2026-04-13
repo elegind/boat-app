@@ -1,6 +1,7 @@
 package com.boatapp.backend.service;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.dto.BoatRequest;
 import com.boatapp.backend.entity.Boat;
 import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.mapper.BoatMapper;
@@ -201,6 +202,30 @@ class BoatServiceTest {
                 .hasMessageContaining("99");
 
         verify(boatRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("createBoat returns a BoatRecord when boat created successfully")
+    void createBoat_should_returnBoatRecord_when_boatCreatedSuccessfully() {
+        // ARRANGE
+        BoatRequest request = new BoatRequest("My-Boat", "A nice boat");
+        Boat boat = Boat.builder().name("My-Boat").description("A nice boat").build();
+        Boat savedBoat = Boat.builder().id(1L).name("My-Boat").description("A nice boat").build();
+        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now());
+
+        when(boatMapper.toEntity(request)).thenReturn(boat);
+        when(boatRepository.save(boat)).thenReturn(savedBoat);
+        when(boatMapper.toRecord(savedBoat)).thenReturn(record);
+
+        // ACT
+        BoatRecord result = boatService.createBoat(request);
+
+        // ASSERT
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.name()).isEqualTo("My-Boat");
+        assertThat(result.description()).isEqualTo("A nice boat");
+        verify(boatRepository).save(boat);
+        verify(boatMapper).toRecord(savedBoat);
     }
 }
 

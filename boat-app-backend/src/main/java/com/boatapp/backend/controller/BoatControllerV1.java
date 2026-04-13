@@ -1,6 +1,7 @@
 package com.boatapp.backend.controller;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.dto.BoatRequest;
 import com.boatapp.backend.service.IBoatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,15 +9,20 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -60,6 +66,25 @@ public class BoatControllerV1 {
             @RequestParam(defaultValue = "5")
             @Min(value = 1, message = "size must be >= 1") int size) {
         return ResponseEntity.ok(boatService.findAll(page, size));
+    }
+
+    /**
+     * Creates a new boat.
+     *
+     * @param request the validated creation payload
+     * @return 201 Created with the persisted {@link BoatRecord}
+     */
+    @Operation(
+            summary = "Create a boat",
+            description = "Creates a new boat and returns the persisted resource with its generated id."
+    )
+    @ApiResponse(responseCode = "201", description = "Created",
+            content = @Content(schema = @Schema(implementation = BoatRecord.class)))
+    @ApiResponse(responseCode = "400", description = "Bad Request — validation error")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public BoatRecord create(@Valid @RequestBody BoatRequest request) {
+        return boatService.createBoat(request);
     }
 
     /**

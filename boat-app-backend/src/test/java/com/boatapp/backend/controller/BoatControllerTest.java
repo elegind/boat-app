@@ -1,6 +1,7 @@
 package com.boatapp.backend.controller;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.dto.BoatRequest;
 import com.boatapp.backend.security.SecurityConfig;
 import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.service.IBoatService;
@@ -13,6 +14,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,11 +25,13 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -196,6 +200,67 @@ class BoatControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value(containsString("99")));
+    }
+
+    // ── POST /api/v1/boats ────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("POST /api/v1/boats → 201 when boat created successfully")
+    void createBoat_should_return201_when_boatCreatedSuccessfully() throws Exception {
+        // ARRANGE
+        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now());
+        when(boatService.createBoat(any(BoatRequest.class))).thenReturn(record);
+
+        // ACT + ASSERT
+        mockMvc.perform(post("/api/v1/boats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"My-Boat\",\"description\":\"A nice boat\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("My-Boat"))
+                .andExpect(jsonPath("$.description").value("A nice boat"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/boats → 400 when name is null")
+    void createBoat_should_return400_when_nameIsNull() throws Exception {
+        mockMvc.perform(post("/api/v1/boats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":null,\"description\":\"A nice boat\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/boats → 400 when name exceeds 30 characters")
+    void createBoat_should_return400_when_nameExceedsMaxLength() throws Exception {
+        String longName = "a".repeat(31);
+        mockMvc.perform(post("/api/v1/boats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + longName + "\",\"description\":\"A nice boat\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/boats → 400 when name contains special characters")
+    void createBoat_should_return400_when_nameContainsSpecialCharacters() throws Exception {
+        mockMvc.perform(post("/api/v1/boats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"My Boat!\",\"description\":\"A nice boat\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/boats → 400 when description exceeds 500 characters")
+    void createBoat_should_return400_when_descriptionExceedsMaxLength() throws Exception {
+        String longDesc = "a".repeat(501);
+        mockMvc.perform(post("/api/v1/boats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"My-Boat\",\"description\":\"" + longDesc + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     /**

@@ -5,14 +5,18 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Boat } from '../../shared/models/boat.model';
+import { BoatRequest } from '../../shared/models/boat-request.model';
 import { BoatService } from '../../core/services/boat.service';
 import { BoatCardComponent } from './components/boat-card/boat-card.component';
 import { BoatDetailDialogComponent } from './components/boat-detail-dialog/boat-detail-dialog.component';
+import { BoatFormDialogComponent } from './components/boat-form-dialog/boat-form-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header';
 import { TranslationService } from '../../core/services/translation.service';
@@ -22,8 +26,10 @@ import { TranslationService } from '../../core/services/translation.service';
   standalone: true,
   imports: [
     BoatCardComponent,
-    // BoatDetailDialogComponent is opened dynamically via MatDialog — not used in template
+    // BoatDetailDialogComponent and BoatFormDialogComponent are opened dynamically via MatDialog
     PageHeaderComponent,
+    MatButtonModule,
+    MatIconModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
   ],
@@ -74,6 +80,36 @@ export class BoatsComponent implements OnInit {
     this.dialog.open(BoatDetailDialogComponent, {
       data: { boat },
       width: '400px',
+    });
+  }
+
+  onCreateBoat(): void {
+    const dialogRef = this.dialog.open<BoatFormDialogComponent, void, BoatRequest>(
+      BoatFormDialogComponent,
+      { width: '480px' },
+    );
+
+    dialogRef.afterClosed().subscribe((boat: BoatRequest | undefined | null) => {
+      if (!boat) return;
+
+      this.boatService.createBoat(boat).subscribe({
+        next: () => {
+          this.snackBar.open(
+            this.t().boats.create.success,
+            undefined,
+            { duration: 3000, panelClass: 'snackbar-success' },
+          );
+          this.currentPage.set(0);
+          this.loadBoats();
+        },
+        error: () => {
+          this.snackBar.open(
+            this.t().boats.create.error,
+            undefined,
+            { duration: 5000, panelClass: 'snackbar-error' },
+          );
+        },
+      });
     });
   }
 
@@ -129,7 +165,3 @@ export class BoatsComponent implements OnInit {
     this.loadBoats();
   }
 }
-
-
-
-

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Boat } from '../../shared/models/boat.model';
+import { BoatRequest } from '../../shared/models/boat-request.model';
 import { Page } from '../../shared/models/page.model';
 
 /** Minimum allowed page size — mirrors backend @Min(1). */
@@ -32,6 +33,14 @@ export class BoatService {
    */
   deleteBoat(id: number): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/boats/${id}`);
+  }
+
+  /**
+   * Sends POST /api/v1/boats with the given payload.
+   * Returns the created {@link Boat} on success (201 Created).
+   */
+  createBoat(request: BoatRequest): Observable<Boat> {
+    return this.http.post<Boat>(`${environment.apiUrl}/boats`, request);
   }
 
   /**

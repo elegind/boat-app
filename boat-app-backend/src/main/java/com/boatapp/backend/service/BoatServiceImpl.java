@@ -1,6 +1,8 @@
 package com.boatapp.backend.service;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.dto.BoatRequest;
+import com.boatapp.backend.entity.Boat;
 import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.mapper.BoatMapper;
 import com.boatapp.backend.repository.BoatRepository;
@@ -39,6 +41,23 @@ public class BoatServiceImpl implements IBoatService {
         log.debug("findAll called — page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return boatRepository.findAll(pageable).map(boatMapper::toRecord);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Maps the request to a {@link Boat} entity via {@link BoatMapper},
+     * persists it, and returns the saved entity as a {@link BoatRecord}.
+     * The {@code createdAt} timestamp is set automatically by {@code @CreatedDate}.
+     */
+    @Override
+    @Transactional
+    public BoatRecord createBoat(BoatRequest request) {
+        log.debug("createBoat called — name={}", request.name());
+        Boat boat = boatMapper.toEntity(request);
+        Boat saved = boatRepository.save(boat);
+        log.debug("createBoat succeeded — id={}", saved.getId());
+        return boatMapper.toRecord(saved);
     }
 
     /**

@@ -42,6 +42,35 @@ export const EN_EN = {
     delete: {
       success: 'Boat successfully deleted',
     },
+    create: {
+      button: 'Create boat',
+      dialog: {
+        title: 'Create a new boat',
+      },
+      success: 'Boat successfully created',
+      error: 'An error occurred while creating the boat',
+    },
+    form: {
+      name: {
+        label: 'Name',
+        hint: 'Letters, numbers and hyphens only. Max 30 characters.',
+        error: {
+          required: 'Name is required.',
+          maxlength: 'Name cannot exceed 30 characters.',
+          pattern: 'Only letters, numbers and hyphens allowed.',
+        },
+      },
+      description: {
+        label: 'Description',
+        hint: 'Max 500 characters.',
+        error: {
+          maxlength: 'Description cannot exceed 500 characters.',
+        },
+      },
+      cancel: 'Cancel',
+      create: 'Create',
+      save: 'Save',
+    },
     empty: 'No boats found',
     loading: 'Loading boats...',
   },

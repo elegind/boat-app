@@ -40,7 +40,7 @@ describe('BoatsComponent', () => {
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(async () => {
-    boatServiceSpy = jasmine.createSpyObj<BoatService>('BoatService', ['getBoats', 'deleteBoat']);
+    boatServiceSpy = jasmine.createSpyObj<BoatService>('BoatService', ['getBoats', 'deleteBoat', 'createBoat']);
     boatServiceSpy.getBoats.and.returnValue(of(mockPage));
 
     dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
@@ -173,6 +173,68 @@ describe('BoatsComponent', () => {
     fixture.detectChanges();
 
     expect(boatServiceSpy.deleteBoat).not.toHaveBeenCalled();
+  });
+
+  it('onCreateBoat_should_openFormDialog_when_createButtonClicked', () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(null) } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onCreateBoat();
+
+    expect(dialogSpy.open).toHaveBeenCalled();
+  });
+
+  it('onCreateBoat_should_showSuccessSnackbar_when_creationSucceeds', () => {
+    const boatRequest = { name: 'New-Boat', description: 'A brand new boat' };
+    const createdBoat: Boat = { id: 99, name: 'New-Boat', description: 'A brand new boat', createdAt: '2026-01-01T00:00:00Z' };
+
+    boatServiceSpy.createBoat.and.returnValue(of(createdBoat));
+    boatServiceSpy.getBoats.and.returnValue(of(mockPage));
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(boatRequest) } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onCreateBoat();
+    fixture.detectChanges();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      jasmine.any(String),
+      undefined,
+      jasmine.objectContaining({ panelClass: 'snackbar-success' }),
+    );
+  });
+
+  it('onCreateBoat_should_showErrorSnackbar_when_creationFails', () => {
+    const boatRequest = { name: 'New-Boat', description: 'A brand new boat' };
+
+    boatServiceSpy.createBoat.and.returnValue(throwError(() => new Error('Server error')));
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(boatRequest) } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onCreateBoat();
+    fixture.detectChanges();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      jasmine.any(String),
+      undefined,
+      jasmine.objectContaining({ panelClass: 'snackbar-error' }),
+    );
+  });
+
+  it('onCreateBoat_should_navigateToFirstPage_when_boatCreatedSuccessfully', () => {
+    const boatRequest = { name: 'New-Boat', description: 'A brand new boat' };
+    const createdBoat: Boat = { id: 99, name: 'New-Boat', description: 'A brand new boat', createdAt: '2026-01-01T00:00:00Z' };
+
+    boatServiceSpy.createBoat.and.returnValue(of(createdBoat));
+    boatServiceSpy.getBoats.and.returnValue(of(mockPage));
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(boatRequest) } as MatDialogRef<unknown>);
+
+    // Simulate being on page 2 before creation
+    fixture.componentInstance['currentPage'].set(2);
+
+    fixture.componentInstance.onCreateBoat();
+    fixture.detectChanges();
+
+    // Must navigate back to page 0 after successful creation
+    expect(fixture.componentInstance['currentPage']()).toBe(0);
+    // getBoats called: once on ngOnInit, once after creation
+    expect(boatServiceSpy.getBoats).toHaveBeenCalledTimes(2);
   });
 });
 

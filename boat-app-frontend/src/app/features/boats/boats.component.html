@@ -1,4 +1,11 @@
-<app-page-header [title]="t().boats.list.title" />
+<div class="flex justify-between items-center">
+  <app-page-header [title]="t().boats.list.title" />
+  <div class="pr-4">
+    <button mat-raised-button color="primary" (click)="onCreateBoat()">
+      <mat-icon>add</mat-icon> {{ t().boats.create.button }}
+    </button>
+  </div>
+</div>
 
 <!-- Loading spinner -->
 @if (isLoading()) {
