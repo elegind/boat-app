@@ -25,14 +25,14 @@
 @if (!isLoading() && boats().length > 0) {
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 pb-4">
     @for (boat of boats(); track boat.id) {
-      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" (deleteBoat)="onDeleteBoat($event)" />
+      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" (editBoat)="onEditBoat($event)" (deleteBoat)="onDeleteBoat($event)" />
     }
   </div>
 }
 
-<!-- Paginator -->
+<!-- Paginator — anchored to bottom via margin-top: auto on .paginator-row -->
 @if (!isLoading() && totalElements() > 0) {
-  <div class="flex justify-center px-4 pt-2">
+  <div class="paginator-row flex justify-center px-4 py-1">
     <mat-paginator
       [length]="totalElements()"
       [pageSize]="pageSize()"
@@ -42,5 +42,3 @@
       showFirstLastButtons />
   </div>
 }
-
-

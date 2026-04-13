@@ -113,8 +113,37 @@ export class BoatsComponent implements OnInit {
     });
   }
 
-  onDeleteBoat(boat: Boat): void {
-    const translations = this.t();
+  onEditBoat(boat: Boat): void {
+    const dialogRef = this.dialog.open<BoatFormDialogComponent, { boat: Boat }, BoatRequest>(
+      BoatFormDialogComponent,
+      { data: { boat }, width: '480px' },
+    );
+
+    dialogRef.afterClosed().subscribe((request: BoatRequest | null | undefined) => {
+      if (!request) return;
+
+      const translations = this.t();
+      this.boatService.updateBoat(boat.id, request).subscribe({
+        next: (updated) => {
+          this.snackBar.open(
+            translations.boats.update.success,
+            undefined,
+            { duration: 3000, panelClass: 'snackbar-success' },
+          );
+          this.boats.update(list => list.map(b => b.id === updated.id ? updated : b));
+        },
+        error: () => {
+          this.snackBar.open(
+            translations.boats.update.error,
+            undefined,
+            { duration: 5000, panelClass: 'snackbar-error' },
+          );
+        },
+      });
+    });
+  }
+
+  onDeleteBoat(boat: Boat): void {    const translations = this.t();
     const title = translations.delete.confirm.title.replace('{{name}}', boat.name);
     const message = translations.delete.confirm.message.replace(/{{name}}/g, boat.name);
 

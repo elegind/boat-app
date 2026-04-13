@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -56,8 +57,8 @@ class BoatControllerTest {
     void getAllBoats_should_returnPageOfBoats_when_defaultParams() throws Exception {
         // ARRANGE
         List<BoatRecord> boats = List.of(
-                new BoatRecord(1L, "Aurora", "A sailing yacht", Instant.now()),
-                new BoatRecord(2L, "Blue Horizon", "An offshore cruiser", Instant.now())
+                new BoatRecord(1L, "Aurora", "A sailing yacht", Instant.now(), null),
+                new BoatRecord(2L, "Blue Horizon", "An offshore cruiser", Instant.now(), null)
         );
         when(boatService.findAll(0, 5))
                 .thenReturn(new PageImpl<>(boats, PageRequest.of(0, 5), 2));
@@ -208,7 +209,7 @@ class BoatControllerTest {
     @DisplayName("POST /api/v1/boats → 201 when boat created successfully")
     void createBoat_should_return201_when_boatCreatedSuccessfully() throws Exception {
         // ARRANGE
-        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now());
+        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now(), null);
         when(boatService.createBoat(any(BoatRequest.class))).thenReturn(record);
 
         // ACT + ASSERT
@@ -247,7 +248,7 @@ class BoatControllerTest {
     void createBoat_should_return400_when_nameContainsSpecialCharacters() throws Exception {
         mockMvc.perform(post("/api/v1/boats")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"My Boat!\",\"description\":\"A nice boat\"}"))
+                        .content("{\"name\":\"My-Boat!\",\"description\":\"A nice boat\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
     }
@@ -269,8 +270,74 @@ class BoatControllerTest {
      */
     private List<BoatRecord> boats(int... ids) {
         return Arrays.stream(ids)
-                .mapToObj(id -> new BoatRecord((long) id, "Boat " + id, null, Instant.now()))
+                .mapToObj(id -> new BoatRecord((long) id, "Boat " + id, null, Instant.now(), null))
                 .toList();
+    }
+
+    // ── PUT /api/v1/boats/{id} ────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("PUT /api/v1/boats/{id} → 200 when boat updated successfully")
+    void updateBoat_should_return200_when_boatUpdatedSuccessfully() throws Exception {
+        // ARRANGE
+        BoatRecord updated = new BoatRecord(1L, "Updated-Boat", "Updated desc", Instant.now(), Instant.now());
+        when(boatService.updateBoat(any(Long.class), any(BoatRequest.class))).thenReturn(updated);
+
+        // ACT + ASSERT
+        mockMvc.perform(put("/api/v1/boats/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Updated-Boat\",\"description\":\"Updated desc\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Updated-Boat"))
+                .andExpect(jsonPath("$.description").value("Updated desc"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/boats/{id} → 404 when boat id not found")
+    void updateBoat_should_return404_when_boatIdNotFound() throws Exception {
+        // ARRANGE
+        when(boatService.updateBoat(any(Long.class), any(BoatRequest.class)))
+                .thenThrow(new BoatNotFoundException(99L));
+
+        // ACT + ASSERT
+        mockMvc.perform(put("/api/v1/boats/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Updated-Boat\",\"description\":\"Updated desc\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(containsString("99")));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/boats/{id} → 400 when name is null")
+    void updateBoat_should_return400_when_nameIsNull() throws Exception {
+        mockMvc.perform(put("/api/v1/boats/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":null,\"description\":\"Updated desc\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/boats/{id} → 400 when name contains special characters")
+    void updateBoat_should_return400_when_nameContainsSpecialCharacters() throws Exception {
+        mockMvc.perform(put("/api/v1/boats/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"My-Boat!\",\"description\":\"Updated desc\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/boats/{id} → 400 when description exceeds 500 characters")
+    void updateBoat_should_return400_when_descriptionExceedsMaxLength() throws Exception {
+        String longDesc = "a".repeat(501);
+        mockMvc.perform(put("/api/v1/boats/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"My-Boat\",\"description\":\"" + longDesc + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 }
 

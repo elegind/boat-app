@@ -22,6 +22,15 @@
       </dt>
       <dd class="mt-1 text-base">{{ data.boat.createdAt | date: 'medium' : 'UTC' }}</dd>
     </div>
+
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {{ t().boats.detail.updatedAt }}
+      </dt>
+      <dd class="mt-1 text-base">
+        {{ data.boat.updatedAt ? (data.boat.updatedAt | date: 'medium' : 'UTC') : '—' }}
+      </dd>
+    </div>
   </dl>
 </mat-dialog-content>
 

@@ -19,7 +19,7 @@
       mat-icon-button
       [attr.aria-label]="t().boats.card.edit"
       [matTooltip]="t().boats.card.edit"
-      disabled>
+      (click)="editBoat.emit(boat())">
       <mat-icon>edit</mat-icon>
     </button>
 

@@ -3,6 +3,8 @@ package com.boatapp.backend.service;
 import com.boatapp.backend.dto.BoatRecord;
 import com.boatapp.backend.dto.BoatRequest;
 import com.boatapp.backend.exception.BoatNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 
 /**
@@ -25,7 +27,7 @@ public interface IBoatService {
      * @param request the validated creation payload
      * @return the persisted boat as a {@link BoatRecord}
      */
-    BoatRecord createBoat(BoatRequest request);
+    BoatRecord createBoat(@NotNull @Valid BoatRequest request);
 
     /**
      * Deletes the boat identified by {@code id}.
@@ -33,5 +35,15 @@ public interface IBoatService {
      * @param id the identifier of the boat to delete
      * @throws BoatNotFoundException if no boat exists with the given {@code id}
      */
-    void deleteBoat(Long id);
+    void deleteBoat(@NotNull Long id);
+
+    /**
+     * Updates the name and description of the boat identified by {@code id}.
+     *
+     * @param id      the identifier of the boat to update
+     * @param request the validated update payload
+     * @return the updated boat as a {@link BoatRecord}
+     * @throws BoatNotFoundException if no boat exists with the given {@code id}
+     */
+    BoatRecord updateBoat(@NotNull Long id, @NotNull @Valid BoatRequest request);
 }

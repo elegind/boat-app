@@ -13,7 +13,7 @@ public record BoatRequest(
 
         @NotBlank
         @Size(max = 30)
-        @Pattern(regexp = "^[a-zA-Z0-9-]+$", message = "Name can only contain letters, numbers and hyphens")
+        @Pattern(regexp = "^[a-zA-Z0-9 -]+$", message = "Name can only contain letters, numbers, spaces and hyphens")
         String name,
 
         @Size(max = 500)

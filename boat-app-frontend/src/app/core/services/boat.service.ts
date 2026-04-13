@@ -44,6 +44,14 @@ export class BoatService {
   }
 
   /**
+   * Sends PUT /api/v1/boats/{id} with the given payload.
+   * Returns the updated {@link Boat} on success (200 OK).
+   */
+  updateBoat(id: number, request: BoatRequest): Observable<Boat> {
+    return this.http.put<Boat>(`${environment.apiUrl}/boats/${id}`, request);
+  }
+
+  /**
    * Clamps page to a valid zero-based index.
    * NaN, Infinity, negative and non-integer values all become 0.
    */

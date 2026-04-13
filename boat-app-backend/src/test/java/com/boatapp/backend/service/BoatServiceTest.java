@@ -51,8 +51,8 @@ class BoatServiceTest {
         // ARRANGE
         Boat boat1 = Boat.builder().id(1L).name("Aurora").description("Desc 1").build();
         Boat boat2 = Boat.builder().id(2L).name("Blue Horizon").description("Desc 2").build();
-        BoatRecord record1 = new BoatRecord(1L, "Aurora", "Desc 1", Instant.now());
-        BoatRecord record2 = new BoatRecord(2L, "Blue Horizon", "Desc 2", Instant.now());
+        BoatRecord record1 = new BoatRecord(1L, "Aurora", "Desc 1", Instant.now(), null);
+        BoatRecord record2 = new BoatRecord(2L, "Blue Horizon", "Desc 2", Instant.now(), null);
 
         Page<Boat> boatPage = new PageImpl<>(List.of(boat1, boat2), PageRequest.of(0, 5), 2);
         when(boatRepository.findAll(any(Pageable.class))).thenReturn(boatPage);
@@ -119,7 +119,7 @@ class BoatServiceTest {
         when(boatRepository.findAll(argThat((Pageable p) -> p.getPageNumber() == 0))).thenReturn(firstPage);
         fiveBoats.forEach(boat ->
                 when(boatMapper.toRecord(boat))
-                        .thenReturn(new BoatRecord(boat.getId(), boat.getName(), null, Instant.now()))
+                        .thenReturn(new BoatRecord(boat.getId(), boat.getName(), null, Instant.now(), null))
         );
 
         // ACT
@@ -147,7 +147,7 @@ class BoatServiceTest {
         when(boatRepository.findAll(argThat((Pageable p) -> p.getPageNumber() == 1))).thenReturn(secondPage);
         twoBoats.forEach(boat ->
                 when(boatMapper.toRecord(boat))
-                        .thenReturn(new BoatRecord(boat.getId(), boat.getName(), null, Instant.now()))
+                        .thenReturn(new BoatRecord(boat.getId(), boat.getName(), null, Instant.now(), null))
         );
 
         // ACT
@@ -211,7 +211,7 @@ class BoatServiceTest {
         BoatRequest request = new BoatRequest("My-Boat", "A nice boat");
         Boat boat = Boat.builder().name("My-Boat").description("A nice boat").build();
         Boat savedBoat = Boat.builder().id(1L).name("My-Boat").description("A nice boat").build();
-        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now());
+        BoatRecord record = new BoatRecord(1L, "My-Boat", "A nice boat", Instant.now(), null);
 
         when(boatMapper.toEntity(request)).thenReturn(boat);
         when(boatRepository.save(boat)).thenReturn(savedBoat);
@@ -226,6 +226,72 @@ class BoatServiceTest {
         assertThat(result.description()).isEqualTo("A nice boat");
         verify(boatRepository).save(boat);
         verify(boatMapper).toRecord(savedBoat);
+    }
+
+    // ── updateBoat ────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("updateBoat returns an updated BoatRecord when the boat exists")
+    void updateBoat_should_returnUpdatedBoatRecord_when_boatExists() {
+        // ARRANGE
+        BoatRequest request = new BoatRequest("Updated-Boat", "Updated description");
+        Boat existing = Boat.builder().id(1L).name("Old-Name").description("Old desc").build();
+        Boat savedBoat = Boat.builder().id(1L).name("Updated-Boat").description("Updated description").build();
+        BoatRecord record = new BoatRecord(1L, "Updated-Boat", "Updated description", Instant.now(), Instant.now());
+
+        when(boatRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(boatRepository.save(existing)).thenReturn(savedBoat);
+        when(boatMapper.toRecord(savedBoat)).thenReturn(record);
+
+        // ACT
+        BoatRecord result = boatService.updateBoat(1L, request);
+
+        // ASSERT
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.name()).isEqualTo("Updated-Boat");
+        assertThat(result.description()).isEqualTo("Updated description");
+        verify(boatRepository).save(existing);
+        verify(boatMapper).toRecord(savedBoat);
+    }
+
+    @Test
+    @DisplayName("updateBoat throws BoatNotFoundException when the id does not exist")
+    void updateBoat_should_throwBoatNotFoundException_when_idNotFound() {
+        // ARRANGE
+        BoatRequest request = new BoatRequest("Updated-Boat", "Updated description");
+        when(boatRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // ACT + ASSERT
+        assertThatThrownBy(() -> boatService.updateBoat(99L, request))
+                .isInstanceOf(BoatNotFoundException.class)
+                .hasMessageContaining("99");
+
+        verify(boatRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateBoat delegates field mutation to the mapper when called")
+    void updateBoat_should_updateOnlyNameAndDescription_when_called() {
+        // ARRANGE
+        BoatRequest request = new BoatRequest("New-Name", "New description");
+        Boat existing = Boat.builder().id(1L).name("Old-Name").description("Old desc").build();
+        Boat savedBoat = Boat.builder().id(1L).name("New-Name").description("New description").build();
+        BoatRecord record = new BoatRecord(1L, "New-Name", "New description", Instant.now(), Instant.now());
+
+        when(boatRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(boatRepository.save(existing)).thenReturn(savedBoat);
+        when(boatMapper.toRecord(savedBoat)).thenReturn(record);
+
+        // ACT
+        boatService.updateBoat(1L, request);
+
+        // ASSERT — mapper is called with the exact request and the managed entity
+        ArgumentCaptor<BoatRequest> requestCaptor = ArgumentCaptor.forClass(BoatRequest.class);
+        ArgumentCaptor<Boat> boatCaptor = ArgumentCaptor.forClass(Boat.class);
+        verify(boatMapper).updateEntityFromRequest(requestCaptor.capture(), boatCaptor.capture());
+        assertThat(requestCaptor.getValue()).isEqualTo(request);
+        assertThat(boatCaptor.getValue()).isSameAs(existing);
+        verify(boatRepository).save(existing);
     }
 }
 

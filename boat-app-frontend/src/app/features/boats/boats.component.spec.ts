@@ -40,7 +40,7 @@ describe('BoatsComponent', () => {
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(async () => {
-    boatServiceSpy = jasmine.createSpyObj<BoatService>('BoatService', ['getBoats', 'deleteBoat', 'createBoat']);
+    boatServiceSpy = jasmine.createSpyObj<BoatService>('BoatService', ['getBoats', 'deleteBoat', 'createBoat', 'updateBoat']);
     boatServiceSpy.getBoats.and.returnValue(of(mockPage));
 
     dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
@@ -235,6 +235,65 @@ describe('BoatsComponent', () => {
     expect(fixture.componentInstance['currentPage']()).toBe(0);
     // getBoats called: once on ngOnInit, once after creation
     expect(boatServiceSpy.getBoats).toHaveBeenCalledTimes(2);
+  });
+
+  it('onEditBoat_should_openFormDialogWithBoat_when_editBoatEmitted', () => {
+    dialogSpy.open.and.returnValue({ afterClosed: () => of(null) } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onEditBoat(mockBoat);
+
+    expect(dialogSpy.open).toHaveBeenCalledWith(
+      jasmine.any(Function),
+      jasmine.objectContaining({ data: { boat: mockBoat } }),
+    );
+  });
+
+  it('onEditBoat_should_updateBoatInList_when_updateSucceeds', () => {
+    const updatedBoat: Boat = { ...mockBoat, name: 'Updated-Aurora' };
+    boatServiceSpy.updateBoat.and.returnValue(of(updatedBoat));
+    dialogSpy.open.and.returnValue({
+      afterClosed: () => of({ name: 'Updated-Aurora', description: mockBoat.description }),
+    } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onEditBoat(mockBoat);
+    fixture.detectChanges();
+
+    expect(boatServiceSpy.updateBoat).toHaveBeenCalledWith(mockBoat.id, jasmine.any(Object));
+    const list = fixture.componentInstance['boats']();
+    expect(list.find(b => b.id === updatedBoat.id)).toEqual(updatedBoat);
+  });
+
+  it('onEditBoat_should_showSuccessSnackbar_when_updateSucceeds', () => {
+    const updatedBoat: Boat = { ...mockBoat, name: 'Updated-Aurora' };
+    boatServiceSpy.updateBoat.and.returnValue(of(updatedBoat));
+    dialogSpy.open.and.returnValue({
+      afterClosed: () => of({ name: 'Updated-Aurora', description: '' }),
+    } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onEditBoat(mockBoat);
+    fixture.detectChanges();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      jasmine.any(String),
+      undefined,
+      jasmine.objectContaining({ panelClass: 'snackbar-success' }),
+    );
+  });
+
+  it('onEditBoat_should_showErrorSnackbar_when_updateFails', () => {
+    boatServiceSpy.updateBoat.and.returnValue(throwError(() => new Error('Server error')));
+    dialogSpy.open.and.returnValue({
+      afterClosed: () => of({ name: 'Updated-Aurora', description: '' }),
+    } as MatDialogRef<unknown>);
+
+    fixture.componentInstance.onEditBoat(mockBoat);
+    fixture.detectChanges();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      jasmine.any(String),
+      undefined,
+      jasmine.objectContaining({ panelClass: 'snackbar-error' }),
+    );
   });
 });
 

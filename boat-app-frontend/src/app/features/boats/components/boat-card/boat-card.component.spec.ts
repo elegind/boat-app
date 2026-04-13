@@ -63,5 +63,18 @@ describe('BoatCardComponent', () => {
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual(mockBoat);
   });
+
+  it('editBoat_should_emitEditBoat_when_penIconClicked', () => {
+    const emitted: Boat[] = [];
+    fixture.componentInstance.editBoat.subscribe((b: Boat) => emitted.push(b));
+
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button');
+    // Second button is the edit (pen) button
+    buttons[1].click();
+    fixture.detectChanges();
+
+    expect(emitted.length).toBe(1);
+    expect(emitted[0]).toEqual(mockBoat);
+  });
 });
 

@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>{{ t().boats.create.dialog.title }}</h2>
+<h2 mat-dialog-title>{{ dialogTitle() }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
@@ -6,7 +6,7 @@
     <!-- Name field -->
     <mat-form-field appearance="outline" class="w-full">
       <mat-label>{{ t().boats.form.name.label }}</mat-label>
-      <input matInput formControlName="name" />
+      <input matInput formControlName="name" maxlength="30" />
       <mat-hint>{{ t().boats.form.name.hint }}</mat-hint>
       @if (form.get('name')?.invalid && form.get('name')?.touched) {
         @if (form.get('name')?.errors?.['required']) {
@@ -24,7 +24,7 @@
     <!-- Description field -->
     <mat-form-field appearance="outline" class="w-full">
       <mat-label>{{ t().boats.form.description.label }}</mat-label>
-      <textarea matInput formControlName="description" rows="4"></textarea>
+      <textarea matInput formControlName="description" rows="4" maxlength="500"></textarea>
       <mat-hint>{{ t().boats.form.description.hint }}</mat-hint>
       @if (form.get('description')?.invalid && form.get('description')?.touched) {
         @if (form.get('description')?.errors?.['maxlength']) {
@@ -46,15 +46,15 @@
   <button
     mat-raised-button
     [ngClass]="{
-      '!bg-green-600': !form.invalid,
-      '!text-white':   !form.invalid,
-      '!bg-gray-300':  form.invalid,
-      '!text-gray-400': form.invalid,
-      'cursor-not-allowed': form.invalid
+      '!bg-green-600': !isFormInvalid(),
+      '!text-white':   !isFormInvalid(),
+      '!bg-gray-300':  isFormInvalid(),
+      '!text-gray-400': isFormInvalid(),
+      'cursor-not-allowed': isFormInvalid()
     }"
-    [disabled]="form.invalid"
+    [disabled]="isFormInvalid()"
     (click)="onConfirm()">
-    {{ t().boats.form.create }}
+    {{ confirmLabel() }}
   </button>
 </mat-dialog-actions>
 

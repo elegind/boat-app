@@ -9,5 +9,6 @@ public record BoatRecord(
         Long id,
         String name,
         String description,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt
 ) {}

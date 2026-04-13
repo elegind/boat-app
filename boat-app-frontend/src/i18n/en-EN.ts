@@ -37,6 +37,7 @@ export const EN_EN = {
       name: 'Name',
       description: 'Description',
       createdAt: 'Created at',
+      updatedAt: 'Updated at',
       close: 'Close',
     },
     delete: {
@@ -50,14 +51,18 @@ export const EN_EN = {
       success: 'Boat successfully created',
       error: 'An error occurred while creating the boat',
     },
+    update: {
+      success: 'Boat successfully updated',
+      error: 'An error occurred while updating the boat',
+    },
     form: {
       name: {
         label: 'Name',
-        hint: 'Letters, numbers and hyphens only. Max 30 characters.',
+        hint: 'Letters, numbers, spaces and hyphens only. Max 30 characters.',
         error: {
           required: 'Name is required.',
           maxlength: 'Name cannot exceed 30 characters.',
-          pattern: 'Only letters, numbers and hyphens allowed.',
+          pattern: 'Only letters, numbers, spaces and hyphens allowed.',
         },
       },
       description: {
@@ -70,6 +75,9 @@ export const EN_EN = {
       cancel: 'Cancel',
       create: 'Create',
       save: 'Save',
+      edit: {
+        title: 'Edit boat',
+      },
     },
     empty: 'No boats found',
     loading: 'Loading boats...',

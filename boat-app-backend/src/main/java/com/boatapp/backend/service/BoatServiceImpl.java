@@ -13,12 +13,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Default implementation of {@link IBoatService}.
  */
 @Slf4j
 @Service
+@Validated
 @Transactional(readOnly = true)
 public class BoatServiceImpl implements IBoatService {
 
@@ -76,5 +78,27 @@ public class BoatServiceImpl implements IBoatService {
                     return new BoatNotFoundException(id);
                 });
         boatRepository.deleteById(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Fetches the managed {@link Boat} entity, delegates field updates to
+     * {@link BoatMapper#updateEntityFromRequest}, persists and returns
+     * the result as a {@link BoatRecord}.
+     */
+    @Override
+    @Transactional
+    public BoatRecord updateBoat(Long id, BoatRequest request) {
+        log.debug("updateBoat called — id={}, name={}", id, request.name());
+        Boat boat = boatRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("updateBoat — boat not found with id={}", id);
+                    return new BoatNotFoundException(id);
+                });
+        boatMapper.updateEntityFromRequest(request, boat);
+        Boat saved = boatRepository.save(boat);
+        log.debug("updateBoat succeeded — id={}", saved.getId());
+        return boatMapper.toRecord(saved);
     }
 }

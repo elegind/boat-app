@@ -1,4 +1,25 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  // Fill the full viewport height minus the sticky toolbar (64px).
+  // This ensures the paginator is always anchored at the bottom regardless
+  // of how many card rows are displayed.
+  min-height: calc(100vh - 64px);
 }
 
+// Sticky paginator on mobile so the user never has to scroll to find it.
+// On md+ the flex layout already keeps it at the bottom of the visible area.
+.paginator-row {
+  margin-top: auto; // push to bottom in the flex column
+  position: sticky;
+  bottom: 0;
+  background-color: var(--mat-sys-surface, #fffbfe);
+  border-top: 1px solid var(--mat-sys-outline-variant, #cac4d0);
+  z-index: 2;
+
+  // On desktop the sticky behaviour is implicit via flex — no need to float
+  // it over content, so only keep position: sticky on small screens.
+  @media (min-width: 960px) {
+    position: static;
+  }
+}

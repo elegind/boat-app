@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -105,6 +106,29 @@ public class BoatControllerV1 {
             @PathVariable Long id) {
         boatService.deleteBoat(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Updates an existing boat.
+     *
+     * @param id      the boat identifier
+     * @param request the validated update payload
+     * @return 200 OK with the updated {@link BoatRecord}
+     */
+    @Operation(
+            summary = "Update a boat",
+            description = "Updates the name and description of the boat identified by id."
+    )
+    @ApiResponse(responseCode = "200", description = "OK — boat updated",
+            content = @Content(schema = @Schema(implementation = BoatRecord.class)))
+    @ApiResponse(responseCode = "404", description = "Not Found — no boat with this id")
+    @ApiResponse(responseCode = "400", description = "Bad Request — validation error")
+    @PutMapping("/{id}")
+    public ResponseEntity<BoatRecord> updateBoat(
+            @Parameter(description = "Boat id", example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody BoatRequest request) {
+        return ResponseEntity.ok(boatService.updateBoat(id, request));
     }
 
 }
