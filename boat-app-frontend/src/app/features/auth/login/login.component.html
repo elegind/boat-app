@@ -1,0 +1,55 @@
+<div class="login-page">
+  <div class="card">
+
+    <div class="brand-section">
+      <div class="brand-badge">
+        <mat-icon>directions_boat</mat-icon>
+      </div>
+      <h1 class="app-title">{{ t().app.title }}</h1>
+      <p class="app-tagline">{{ t().app.tagline }}</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+
+      <!-- Username -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>{{ t().auth.login.username.label }}</mat-label>
+        <mat-icon matPrefix class="field-prefix-icon">person</mat-icon>
+        <input matInput formControlName="username" autocomplete="username" />
+        @if (form.controls.username.touched && form.controls.username.hasError('required')) {
+          <mat-error>{{ t().auth.login.username.error.required }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Password -->
+      <mat-form-field appearance="outline" class="w-full mt-2">
+        <mat-label>{{ t().auth.login.password.label }}</mat-label>
+        <mat-icon matPrefix class="field-prefix-icon">lock</mat-icon>
+        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+          <mat-error>{{ t().auth.login.password.error.required }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Submit -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="submit-btn"
+        [disabled]="isFormInvalid() || isLoading()">
+
+        @if (isLoading()) {
+          <div class="loading-content">
+            <mat-spinner diameter="20" class="btn-spinner" />
+            <span>{{ t().auth.login.loading }}</span>
+          </div>
+        } @else {
+          {{ t().auth.login.submit }}
+        }
+      </button>
+
+    </form>
+  </div>
+</div>
+
