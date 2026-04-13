@@ -2,6 +2,7 @@ package com.boatapp.backend.service;
 
 import com.boatapp.backend.dto.BoatRecord;
 import com.boatapp.backend.entity.Boat;
+import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.mapper.BoatMapper;
 import com.boatapp.backend.repository.BoatRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -17,12 +18,14 @@ import org.springframework.data.domain.*;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -169,6 +172,35 @@ class BoatServiceTest {
         assertThatThrownBy(() -> boatService.findAll(0, 5))
                 .isInstanceOf(DataAccessResourceFailureException.class)
                 .hasMessageContaining("Connection to database lost");
+    }
+
+    @Test
+    @DisplayName("deleteBoat deletes the boat when the id exists")
+    void deleteBoat_should_deleteBoat_when_idExists() {
+        // ARRANGE
+        Boat boat = Boat.builder().id(1L).name("Aurora").build();
+        when(boatRepository.findById(1L)).thenReturn(Optional.of(boat));
+
+        // ACT
+        boatService.deleteBoat(1L);
+
+        // ASSERT
+        verify(boatRepository).findById(1L);
+        verify(boatRepository).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("deleteBoat throws BoatNotFoundException when the id does not exist")
+    void deleteBoat_should_throwBoatNotFoundException_when_idNotFound() {
+        // ARRANGE
+        when(boatRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // ACT + ASSERT
+        assertThatThrownBy(() -> boatService.deleteBoat(99L))
+                .isInstanceOf(BoatNotFoundException.class)
+                .hasMessageContaining("99");
+
+        verify(boatRepository, never()).deleteById(any());
     }
 }
 

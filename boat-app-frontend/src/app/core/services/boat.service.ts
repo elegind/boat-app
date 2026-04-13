@@ -27,6 +27,14 @@ export class BoatService {
   }
 
   /**
+   * Sends DELETE /api/v1/boats/{id}.
+   * Returns an empty Observable<void> on success (204 No Content).
+   */
+  deleteBoat(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/boats/${id}`);
+  }
+
+  /**
    * Clamps page to a valid zero-based index.
    * NaN, Infinity, negative and non-integer values all become 0.
    */

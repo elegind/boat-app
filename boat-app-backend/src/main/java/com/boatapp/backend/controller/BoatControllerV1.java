@@ -12,7 +12,9 @@ import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,6 +60,26 @@ public class BoatControllerV1 {
             @RequestParam(defaultValue = "5")
             @Min(value = 1, message = "size must be >= 1") int size) {
         return ResponseEntity.ok(boatService.findAll(page, size));
+    }
+
+    /**
+     * Deletes a boat by id.
+     *
+     * @param id the boat identifier
+     * @return 204 No Content on success
+     */
+    @Operation(
+            summary = "Delete a boat",
+            description = "Deletes the boat identified by id. Returns 204 on success, 404 if not found."
+    )
+    @ApiResponse(responseCode = "204", description = "No Content — boat deleted")
+    @ApiResponse(responseCode = "404", description = "Not Found — no boat with this id")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBoat(
+            @Parameter(description = "Boat id", example = "1")
+            @PathVariable Long id) {
+        boatService.deleteBoat(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

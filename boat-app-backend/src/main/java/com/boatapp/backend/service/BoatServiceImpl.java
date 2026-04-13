@@ -1,6 +1,7 @@
 package com.boatapp.backend.service;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.mapper.BoatMapper;
 import com.boatapp.backend.repository.BoatRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -38,5 +39,23 @@ public class BoatServiceImpl implements IBoatService {
         log.debug("findAll called — page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return boatRepository.findAll(pageable).map(boatMapper::toRecord);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Verifies the boat exists before deletion so that a meaningful
+     * {@link BoatNotFoundException} is raised rather than a silent no-op.
+     */
+    @Override
+    @Transactional
+    public void deleteBoat(Long id) {
+        log.debug("deleteBoat called — id={}", id);
+        boatRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("deleteBoat — boat not found with id={}", id);
+                    return new BoatNotFoundException(id);
+                });
+        boatRepository.deleteById(id);
     }
 }

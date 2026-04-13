@@ -50,5 +50,18 @@ describe('BoatCardComponent', () => {
     expect(emitted.length).toBe(1);
     expect(emitted[0]).toEqual(mockBoat);
   });
+
+  it('deleteBoat_should_emitDeleteBoat_when_trashIconClicked', () => {
+    const emitted: Boat[] = [];
+    fixture.componentInstance.deleteBoat.subscribe((b: Boat) => emitted.push(b));
+
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button');
+    // Third button is the delete (trash) button
+    buttons[2].click();
+    fixture.detectChanges();
+
+    expect(emitted.length).toBe(1);
+    expect(emitted[0]).toEqual(mockBoat);
+  });
 });
 

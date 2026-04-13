@@ -1,6 +1,7 @@
 package com.boatapp.backend.service;
 
 import com.boatapp.backend.dto.BoatRecord;
+import com.boatapp.backend.exception.BoatNotFoundException;
 import org.springframework.data.domain.Page;
 
 /**
@@ -16,4 +17,12 @@ public interface IBoatService {
      * @return a {@link Page} of {@link BoatRecord}
      */
     Page<BoatRecord> findAll(int page, int size);
+
+    /**
+     * Deletes the boat identified by {@code id}.
+     *
+     * @param id the identifier of the boat to delete
+     * @throws BoatNotFoundException if no boat exists with the given {@code id}
+     */
+    void deleteBoat(Long id);
 }

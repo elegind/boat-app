@@ -17,6 +17,7 @@ import { TranslationService } from '../../../../core/services/translation.servic
 export class BoatCardComponent {
   readonly boat = input.required<Boat>();
   readonly viewDetail = output<Boat>();
+  readonly deleteBoat = output<Boat>();
 
   protected readonly t = inject(TranslationService).t;
 }

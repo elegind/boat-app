@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <p>{{ data.message }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-stroked-button
+    class="!border-red-500 !text-red-500 hover:!bg-red-50"
+    (click)="cancel()">
+    {{ data.cancelLabel }}
+  </button>
+  <button
+    mat-raised-button
+    class="!bg-green-600 !text-white hover:!bg-green-700"
+    (click)="confirm()">
+    {{ data.confirmLabel }}
+  </button>
+</mat-dialog-actions>
+
+

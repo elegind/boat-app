@@ -1,7 +1,9 @@
 package com.boatapp.backend.controller;
 
 import com.boatapp.backend.config.AppProfile;
+import com.boatapp.backend.exception.BoatNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
  * }
  * </pre>
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -38,10 +41,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maps {@link BoatNotFoundException} to {@code 404 Not Found}.
+     */
+    @ExceptionHandler(BoatNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBoatNotFound(BoatNotFoundException ex) {
+        log.warn("BoatNotFoundException: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage(), Instant.now()));
+    }
+
+    /**
      * Re-uses the status and reason already embedded in {@link ResponseStatusException}.
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        log.warn("ResponseStatusException: {}", ex.getMessage());
         int statusValue = ex.getStatusCode().value();
         String httpPhrase = resolvePhrase(statusValue);
         String message = ex.getReason() != null ? ex.getReason() : httpPhrase;
@@ -55,6 +69,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        log.warn("MethodArgumentNotValidException: {}", ex.getMessage());
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
@@ -68,6 +83,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        log.warn("ConstraintViolationException: {}", ex.getMessage());
         String message = ex.getConstraintViolations().stream()
                 .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
                 .collect(Collectors.joining(", "));
@@ -82,6 +98,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.warn("MethodArgumentTypeMismatchException: {}", ex.getMessage());
         String expected = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
         String message = "Parameter '" + ex.getName() + "' must be of type " + expected
                 + " but received: '" + ex.getValue() + "'";
@@ -100,6 +117,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        log.error("Unhandled exception", ex);
         String message = AppProfile.DEV.isActive(environment)
                 ? ex.getMessage()
                 : "An unexpected error occurred. Please contact support.";

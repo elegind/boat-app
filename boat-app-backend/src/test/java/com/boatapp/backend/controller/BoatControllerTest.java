@@ -2,6 +2,7 @@ package com.boatapp.backend.controller;
 
 import com.boatapp.backend.dto.BoatRecord;
 import com.boatapp.backend.security.SecurityConfig;
+import com.boatapp.backend.exception.BoatNotFoundException;
 import com.boatapp.backend.service.IBoatService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,10 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -167,6 +171,31 @@ class BoatControllerTest {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value(containsString("'page'")))
                 .andExpect(jsonPath("$.message").value(containsString("'abc'")));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/boats/{id} → 204 when boat deleted successfully")
+    void deleteBoat_should_return204_when_boatDeletedSuccessfully() throws Exception {
+        // ARRANGE
+        doNothing().when(boatService).deleteBoat(1L);
+
+        // ACT + ASSERT
+        mockMvc.perform(delete("/api/v1/boats/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/boats/{id} → 404 when boat id not found")
+    void deleteBoat_should_return404_when_boatIdNotFound() throws Exception {
+        // ARRANGE
+        doThrow(new BoatNotFoundException(99L)).when(boatService).deleteBoat(99L);
+
+        // ACT + ASSERT
+        mockMvc.perform(delete("/api/v1/boats/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value(containsString("99")));
     }
 
     /**

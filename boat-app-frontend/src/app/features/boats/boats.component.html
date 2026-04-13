@@ -18,20 +18,22 @@
 @if (!isLoading() && boats().length > 0) {
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 pb-4">
     @for (boat of boats(); track boat.id) {
-      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" />
+      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" (deleteBoat)="onDeleteBoat($event)" />
     }
   </div>
 }
 
 <!-- Paginator -->
-<div class="flex justify-center px-4 pt-2">
-  <mat-paginator
-    [length]="totalElements()"
-    [pageSize]="pageSize()"
-    [pageIndex]="currentPage()"
-    [pageSizeOptions]="pageSizeOptions"
-    (page)="onPageChange($event)"
-    showFirstLastButtons />
-</div>
+@if (!isLoading() && totalElements() > 0) {
+  <div class="flex justify-center px-4 pt-2">
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="currentPage()"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPageChange($event)"
+      showFirstLastButtons />
+  </div>
+}
 
 

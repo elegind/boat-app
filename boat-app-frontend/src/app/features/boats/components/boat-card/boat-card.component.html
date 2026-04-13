@@ -27,7 +27,7 @@
       mat-icon-button
       [attr.aria-label]="t().boats.card.delete"
       [matTooltip]="t().boats.card.delete"
-      disabled>
+      (click)="deleteBoat.emit(boat())">
       <mat-icon>delete</mat-icon>
     </button>
   </mat-card-actions>

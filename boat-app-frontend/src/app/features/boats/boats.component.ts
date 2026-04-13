@@ -8,10 +8,12 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Boat } from '../../shared/models/boat.model';
 import { BoatService } from '../../core/services/boat.service';
 import { BoatCardComponent } from './components/boat-card/boat-card.component';
 import { BoatDetailDialogComponent } from './components/boat-detail-dialog/boat-detail-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header';
 import { TranslationService } from '../../core/services/translation.service';
 
@@ -32,6 +34,7 @@ import { TranslationService } from '../../core/services/translation.service';
 export class BoatsComponent implements OnInit {
   private readonly boatService = inject(BoatService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   protected readonly t = inject(TranslationService).t;
 
   protected readonly boats = signal<Boat[]>([]);
@@ -73,7 +76,60 @@ export class BoatsComponent implements OnInit {
       width: '400px',
     });
   }
+
+  onDeleteBoat(boat: Boat): void {
+    const translations = this.t();
+    const title = translations.delete.confirm.title.replace('{{name}}', boat.name);
+    const message = translations.delete.confirm.message.replace(/{{name}}/g, boat.name);
+
+    const dialogData: ConfirmDialogData = {
+      title,
+      message,
+      cancelLabel: translations.delete.confirm.cancel,
+      confirmLabel: translations.delete.confirm.ok,
+    };
+
+    const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+      ConfirmDialogComponent,
+      { data: dialogData, width: '400px' },
+    );
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.boatService.deleteBoat(boat.id).subscribe({
+        next: () => {
+          this.snackBar.open(
+            translations.boats.delete.success,
+            undefined,
+            { duration: 3000, panelClass: 'snackbar-success' },
+          );
+          this._reloadAfterDeletion();
+        },
+        error: () => {
+          this.snackBar.open(
+            translations.delete.error,
+            undefined,
+            { duration: 5000, panelClass: 'snackbar-error' },
+          );
+        },
+      });
+    });
+  }
+
+  /**
+   * Reloads the current page from the API after a deletion.
+   */
+  private _reloadAfterDeletion(): void {
+    // boats() still holds the pre-deletion list at this point.
+    // length === 1 means the page will be empty after the server confirms deletion.
+    if (this.boats().length === 1 && this.currentPage() > 0) {
+      this.currentPage.update((p) => p - 1);
+    }
+    this.loadBoats();
+  }
 }
+
 
 
 

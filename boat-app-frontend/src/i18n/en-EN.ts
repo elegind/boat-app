@@ -14,14 +14,14 @@ export const EN_EN = {
       version: 'v0.0.1',
     },
   },
-  home: {
-    header: {
-      title: 'Welcome to Boat App',
-      subtitle: 'Manage your fleet of boats.',
+  delete: {
+    confirm: {
+      title: 'Delete {{name}}',
+      message: 'Are you sure you want to delete {{name}}? This action cannot be undone.',
+      cancel: 'Cancel',
+      ok: 'Ok',
     },
-    card: {
-      body: 'This is the home page of the Boat App.',
-    },
+    error: 'An error occurred while deleting.',
   },
   boats: {
     list: {
@@ -39,6 +39,9 @@ export const EN_EN = {
       createdAt: 'Created at',
       close: 'Close',
     },
+    delete: {
+      success: 'Boat successfully deleted',
+    },
     empty: 'No boats found',
     loading: 'Loading boats...',
   },
@@ -46,4 +49,3 @@ export const EN_EN = {
 
 /** Shape contract — every locale file must satisfy this type. */
 export type Translations = typeof EN_EN;
-
