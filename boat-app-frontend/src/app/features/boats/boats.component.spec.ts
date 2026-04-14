@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { WritableSignal, provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -7,6 +7,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BoatsComponent } from './boats.component';
 import { BoatService } from '../../core/services/boat.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { Page } from '../../shared/models/page.model';
 import { Boat } from '../../shared/models/boat.model';
 
@@ -38,6 +39,7 @@ describe('BoatsComponent', () => {
   let boatServiceSpy: jasmine.SpyObj<BoatService>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let isAdminSignal: WritableSignal<boolean>;
 
   beforeEach(async () => {
     boatServiceSpy = jasmine.createSpyObj<BoatService>('BoatService', ['getBoats', 'deleteBoat', 'createBoat', 'updateBoat']);
@@ -46,6 +48,9 @@ describe('BoatsComponent', () => {
     dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
     snackBarSpy = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
+    isAdminSignal = signal(false);
+    const authServiceMock = { isAdmin: isAdminSignal };
+
     await TestBed.configureTestingModule({
       imports: [BoatsComponent],
       providers: [
@@ -53,6 +58,7 @@ describe('BoatsComponent', () => {
         { provide: BoatService, useValue: boatServiceSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: AuthService, useValue: authServiceMock },
         provideNoopAnimations(),
         provideRouter([]),
       ],
@@ -294,6 +300,22 @@ describe('BoatsComponent', () => {
       undefined,
       jasmine.objectContaining({ panelClass: 'snackbar-error' }),
     );
+  });
+
+  it('should_showCreateButton_when_userIsAdmin', () => {
+    isAdminSignal.set(true);
+    fixture.detectChanges();
+
+    const createButton = (fixture.nativeElement as HTMLElement).querySelector('button[mat-raised-button]');
+    expect(createButton).toBeTruthy();
+  });
+
+  it('should_hideCreateButton_when_userIsNotAdmin', () => {
+    isAdminSignal.set(false);
+    fixture.detectChanges();
+
+    const createButton = (fixture.nativeElement as HTMLElement).querySelector('button[mat-raised-button]');
+    expect(createButton).toBeNull();
   });
 });
 

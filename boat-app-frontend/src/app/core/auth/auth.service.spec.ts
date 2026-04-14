@@ -95,6 +95,59 @@ describe('AuthService', () => {
 
     expect(oauthServiceSpy.initCodeFlow).toHaveBeenCalledOnceWith();
   });
+
+  it('should_returnRoles_when_validTokenExists', () => {
+    const payload = btoa(
+      JSON.stringify({ realm_access: { roles: ['ROLE_ADMIN', 'ROLE_USER'] } }),
+    );
+    const fakeToken = `header.${payload}.signature`;
+    oauthServiceSpy.getAccessToken.and.returnValue(fakeToken);
+
+    const roles = service.getRoles();
+
+    expect(roles).toContain('ROLE_ADMIN');
+    expect(roles).toContain('ROLE_USER');
+  });
+
+  it('should_returnEmptyArray_when_noTokenExists', () => {
+    oauthServiceSpy.getAccessToken.and.returnValue('');
+
+    const roles = service.getRoles();
+
+    expect(roles).toEqual([]);
+  });
+
+  it('should_returnTrue_for_isAdmin_when_tokenContainsRoleAdmin', async () => {
+    const payload = btoa(
+      JSON.stringify({ realm_access: { roles: ['ROLE_ADMIN'] } }),
+    );
+    const fakeToken = `header.${payload}.signature`;
+    oauthServiceSpy.hasValidAccessToken.and.returnValue(true);
+    oauthServiceSpy.getAccessToken.and.returnValue(fakeToken);
+    oauthServiceSpy.loadUserProfile.and.returnValue(
+      Promise.resolve({ info: { sub: '1', preferred_username: 'admin' } } as unknown as object),
+    );
+
+    await service.initAuth();
+
+    expect(service.isAdmin()).toBeTrue();
+  });
+
+  it('should_returnFalse_for_isAdmin_when_tokenContainsOnlyRoleUser', async () => {
+    const payload = btoa(
+      JSON.stringify({ realm_access: { roles: ['ROLE_USER'] } }),
+    );
+    const fakeToken = `header.${payload}.signature`;
+    oauthServiceSpy.hasValidAccessToken.and.returnValue(true);
+    oauthServiceSpy.getAccessToken.and.returnValue(fakeToken);
+    oauthServiceSpy.loadUserProfile.and.returnValue(
+      Promise.resolve({ info: { sub: '2', preferred_username: 'user' } } as unknown as object),
+    );
+
+    await service.initAuth();
+
+    expect(service.isAdmin()).toBeFalse();
+  });
 });
 
 

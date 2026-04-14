@@ -1,10 +1,12 @@
 <div class="flex justify-between items-center">
   <app-page-header [title]="t().boats.list.title" />
-  <div class="pr-4">
-    <button mat-raised-button color="primary" (click)="onCreateBoat()">
-      <mat-icon>add</mat-icon> {{ t().boats.create.button }}
-    </button>
-  </div>
+  @if (authService.isAdmin()) {
+    <div class="pr-4">
+      <button mat-raised-button color="primary" (click)="onCreateBoat()">
+        <mat-icon>add</mat-icon> {{ t().boats.create.button }}
+      </button>
+    </div>
+  }
 </div>
 
 <!-- Loading spinner -->
@@ -25,7 +27,12 @@
 @if (!isLoading() && boats().length > 0) {
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 pb-4">
     @for (boat of boats(); track boat.id) {
-      <app-boat-card [boat]="boat" (viewDetail)="openDetail($event)" (editBoat)="onEditBoat($event)" (deleteBoat)="onDeleteBoat($event)" />
+      <app-boat-card
+        [boat]="boat"
+        [isAdmin]="authService.isAdmin()"
+        (viewDetail)="openDetail($event)"
+        (editBoat)="onEditBoat($event)"
+        (deleteBoat)="onDeleteBoat($event)" />
     }
   </div>
 }

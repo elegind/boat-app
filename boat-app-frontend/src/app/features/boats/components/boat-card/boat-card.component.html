@@ -15,22 +15,22 @@
       <mat-icon>visibility</mat-icon>
     </button>
 
-    <button
-      mat-icon-button
-      [attr.aria-label]="t().boats.card.edit"
-      [matTooltip]="t().boats.card.edit"
-      (click)="editBoat.emit(boat())">
-      <mat-icon>edit</mat-icon>
-    </button>
+    @if (isAdmin()) {
+      <button
+        mat-icon-button
+        [attr.aria-label]="t().boats.card.edit"
+        [matTooltip]="t().boats.card.edit"
+        (click)="editBoat.emit(boat())">
+        <mat-icon>edit</mat-icon>
+      </button>
 
-    <button
-      mat-icon-button
-      [attr.aria-label]="t().boats.card.delete"
-      [matTooltip]="t().boats.card.delete"
-      (click)="deleteBoat.emit(boat())">
-      <mat-icon>delete</mat-icon>
-    </button>
+      <button
+        mat-icon-button
+        [attr.aria-label]="t().boats.card.delete"
+        [matTooltip]="t().boats.card.delete"
+        (click)="deleteBoat.emit(boat())">
+        <mat-icon>delete</mat-icon>
+      </button>
+    }
   </mat-card-actions>
 </mat-card>
-
-

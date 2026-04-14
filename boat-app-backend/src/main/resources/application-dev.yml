@@ -18,12 +18,21 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
 
 # Actuator — full health details for local debugging
 management:
   endpoint:
     health:
       show-details: always
+
+# SpringDoc / Swagger UI — enabled in dev for interactive API exploration
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 
 # Verbose logging for the application package in dev
 logging:

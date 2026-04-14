@@ -30,7 +30,7 @@ Startup order enforced by `depends_on` + healthchecks:
 | Persistence | Spring Data JPA + Hibernate + PostgreSQL |
 | Mapping | MapStruct 1.6.3 |
 | Boilerplate | Lombok |
-| Security | Spring Security (permit-all, extensible) |
+| Security | Spring Security — JWT resource server (Keycloak) + role-based access via `Permission` enum |
 | API docs | SpringDoc OpenAPI / Swagger UI — multi-version via `GroupedOpenApi` |
 | Observability | Spring Boot Actuator |
 | Build | Maven 3.9+ |
@@ -366,8 +366,45 @@ curl -X POST http://localhost:9000/realms/boat-app/protocol/openid-connect/token
 
 ---
 
+## Security — Permission Matrix
+
+All endpoints are protected by JWT-based role access control.
+Roles are extracted from the `realm_access.roles` claim in the Keycloak JWT.
+Permissions are defined centrally in `Permission.java` — adding a new permission
+requires only adding a value to that enum, no changes to SecurityConfig.
+
+| Permission   | Role       | Method | Endpoint         |
+|--------------|------------|--------|------------------|
+| BOATS_READ   | ROLE_USER  | GET    | /api/v1/boats/** |
+| BOATS_CREATE | ROLE_ADMIN | POST   | /api/v1/boats    |
+| BOATS_UPDATE | ROLE_ADMIN | PUT    | /api/v1/boats/** |
+| BOATS_DELETE | ROLE_ADMIN | DELETE | /api/v1/boats/** |
+
+### Always public (all profiles)
+- `GET /actuator/health`
+- `GET /actuator/info`
+
+### Public in dev/staging only
+- `GET /v3/api-docs/**`
+- `GET /swagger-ui/**`
+- `GET /swagger-ui.html`
+
+### Test users (demo)
+| Username | Password | Roles                  |
+|----------|----------|------------------------|
+| user     | user123  | ROLE_USER              |
+| admin    | admin123 | ROLE_USER, ROLE_ADMIN  |
+
+---
+
 ## Timestamps
 
-All timestamps use **`Instant` (UTC)**. The JVM is forced to UTC via `-Duser.timezone=UTC`
-in the Docker `ENTRYPOINT`. PostgreSQL stores them as `TIMESTAMP WITH TIME ZONE`.
-The Angular frontend formats them with `DatePipe` using `'UTC'` timezone.
+All timestamps use **`Instant` (UTC)**. Three layers enforce UTC end-to-end:
+
+| Layer | Config | Effect |
+|-------|--------|--------|
+| JVM | `-Duser.timezone=UTC` in Docker `ENTRYPOINT` | Java system timezone = UTC |
+| Hibernate → JDBC | `hibernate.jdbc.time_zone: UTC` in `application.yml` | Timestamps sent and read as UTC on the JDBC wire |
+| PostgreSQL | `TIMESTAMP WITH TIME ZONE` column type | Storage is timezone-aware |
+
+The Angular frontend formats timestamps with `DatePipe` using the `'UTC'` timezone.

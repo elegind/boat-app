@@ -1,5 +1,6 @@
 package com.boatapp.backend.config;
 
+import lombok.Getter;
 import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.Arrays;
  * AppProfile.DEV.isActive(environment)
  * }</pre>
  */
+@Getter
 public enum AppProfile {
 
     DEV("dev"),

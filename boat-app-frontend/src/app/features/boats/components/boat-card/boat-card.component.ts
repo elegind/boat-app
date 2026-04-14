@@ -16,6 +16,8 @@ import { TranslationService } from '../../../../core/services/translation.servic
 })
 export class BoatCardComponent {
   readonly boat = input.required<Boat>();
+
+  readonly isAdmin = input<boolean>(false);
   readonly viewDetail = output<Boat>();
   readonly editBoat = output<Boat>();
   readonly deleteBoat = output<Boat>();

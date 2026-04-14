@@ -58,7 +58,10 @@ services:
       POSTGRES_USER: boat
       POSTGRES_PASSWORD: boat
       TZ: UTC
-      KEYCLOAK_ISSUER_URI: http://auth-mock:9000/realms/boat-app
+      # JWK Set URI: internal Docker URL to fetch Keycloak public keys
+      KEYCLOAK_JWK_SET_URI: http://auth-mock:9000/realms/boat-app/protocol/openid-connect/certs
+      # Issuer URI: browser-visible URL — must match the iss claim in the JWT
+      KEYCLOAK_ISSUER_URI: http://localhost:9000/realms/boat-app
     depends_on:
       auth-mock:
         condition: service_healthy

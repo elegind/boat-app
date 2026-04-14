@@ -20,6 +20,7 @@ import { BoatFormDialogComponent } from './components/boat-form-dialog/boat-form
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header';
 import { TranslationService } from '../../core/services/translation.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-boats',
@@ -42,6 +43,7 @@ export class BoatsComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly t = inject(TranslationService).t;
+  protected readonly authService = inject(AuthService);
 
   protected readonly boats = signal<Boat[]>([]);
   protected readonly totalElements = signal<number>(0);

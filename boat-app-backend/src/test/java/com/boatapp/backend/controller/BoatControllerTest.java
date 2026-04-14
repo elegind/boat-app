@@ -15,6 +15,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -49,6 +52,13 @@ class BoatControllerTest {
     @MockitoBean
     private IBoatService boatService;
 
+    /**
+     * Prevents Spring Boot's OAuth2 auto-configuration from contacting Keycloak at startup.
+     * The jwt() post-processor bypasses JwtDecoder entirely during request processing.
+     */
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
+
 
     // ── GET /api/v1/boats ─────────────────────────────────────────────────────
 
@@ -64,7 +74,8 @@ class BoatControllerTest {
                 .thenReturn(new PageImpl<>(boats, PageRequest.of(0, 5), 2));
 
         // ACT and ASSERT
-        mockMvc.perform(get("/api/v1/boats"))
+        mockMvc.perform(get("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Aurora"))
                 .andExpect(jsonPath("$.totalElements").value(2));
@@ -78,7 +89,8 @@ class BoatControllerTest {
                 .thenReturn(new PageImpl<>(boats(1, 2, 3, 4, 5), PageRequest.of(0, 5), 10));
 
         // ACT and ASSERT
-        mockMvc.perform(get("/api/v1/boats").param("page", "0").param("size", "5"))
+        mockMvc.perform(get("/api/v1/boats").param("page", "0").param("size", "5")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(5)));
     }
@@ -91,7 +103,8 @@ class BoatControllerTest {
                 .thenReturn(new PageImpl<>(boats(6, 7, 8), PageRequest.of(1, 5), 8));
 
         // ACT and ASSERT
-        mockMvc.perform(get("/api/v1/boats").param("page", "1").param("size", "5"))
+        mockMvc.perform(get("/api/v1/boats").param("page", "1").param("size", "5")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.number").value(1));
     }
@@ -104,7 +117,8 @@ class BoatControllerTest {
                 .thenReturn(new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 5), 0));
 
         // ACT and ASSERT
-        mockMvc.perform(get("/api/v1/boats"))
+        mockMvc.perform(get("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(0))
                 .andExpect(jsonPath("$.content", hasSize(0)));
@@ -118,7 +132,8 @@ class BoatControllerTest {
                 .thenThrow(new DataAccessResourceFailureException("Connection to database lost"));
 
         // ACT and ASSERT
-        mockMvc.perform(get("/api/v1/boats"))
+        mockMvc.perform(get("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.error").value("Internal Server Error"))
@@ -129,7 +144,8 @@ class BoatControllerTest {
     @Test
     @DisplayName("GET /api/v1/boats?page=-1 → 400 with constraint violation message")
     void getAllBoats_should_return400_when_pageIsNegative() throws Exception {
-        mockMvc.perform(get("/api/v1/boats").param("page", "-1"))
+        mockMvc.perform(get("/api/v1/boats").param("page", "-1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -139,7 +155,8 @@ class BoatControllerTest {
     @Test
     @DisplayName("GET /api/v1/boats?size=0 → 400 with constraint violation message")
     void getAllBoats_should_return400_when_sizeIsZero() throws Exception {
-        mockMvc.perform(get("/api/v1/boats").param("size", "0"))
+        mockMvc.perform(get("/api/v1/boats").param("size", "0")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -149,7 +166,8 @@ class BoatControllerTest {
     @Test
     @DisplayName("GET /api/v1/boats?size=-5 → 400 with constraint violation message")
     void getAllBoats_should_return400_when_sizeIsNegative() throws Exception {
-        mockMvc.perform(get("/api/v1/boats").param("size", "-5"))
+        mockMvc.perform(get("/api/v1/boats").param("size", "-5")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -159,7 +177,8 @@ class BoatControllerTest {
     @Test
     @DisplayName("GET /api/v1/boats?page=-1&size=0 → 400 and both violations present in message")
     void getAllBoats_should_return400_when_bothParamsAreInvalid() throws Exception {
-        mockMvc.perform(get("/api/v1/boats").param("page", "-1").param("size", "0"))
+        mockMvc.perform(get("/api/v1/boats").param("page", "-1").param("size", "0")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -170,7 +189,8 @@ class BoatControllerTest {
     @Test
     @DisplayName("GET /api/v1/boats?page=abc → 400 when page is not a number")
     void getAllBoats_should_return400_when_pageIsNotNumeric() throws Exception {
-        mockMvc.perform(get("/api/v1/boats").param("page", "abc"))
+        mockMvc.perform(get("/api/v1/boats").param("page", "abc")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
@@ -185,7 +205,8 @@ class BoatControllerTest {
         doNothing().when(boatService).deleteBoat(1L);
 
         // ACT + ASSERT
-        mockMvc.perform(delete("/api/v1/boats/1"))
+        mockMvc.perform(delete("/api/v1/boats/1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isNoContent());
     }
 
@@ -196,7 +217,8 @@ class BoatControllerTest {
         doThrow(new BoatNotFoundException(99L)).when(boatService).deleteBoat(99L);
 
         // ACT + ASSERT
-        mockMvc.perform(delete("/api/v1/boats/99"))
+        mockMvc.perform(delete("/api/v1/boats/99")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
@@ -214,6 +236,7 @@ class BoatControllerTest {
 
         // ACT + ASSERT
         mockMvc.perform(post("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"My-Boat\",\"description\":\"A nice boat\"}"))
                 .andExpect(status().isCreated())
@@ -226,6 +249,7 @@ class BoatControllerTest {
     @DisplayName("POST /api/v1/boats → 400 when name is null")
     void createBoat_should_return400_when_nameIsNull() throws Exception {
         mockMvc.perform(post("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":null,\"description\":\"A nice boat\"}"))
                 .andExpect(status().isBadRequest())
@@ -237,6 +261,7 @@ class BoatControllerTest {
     void createBoat_should_return400_when_nameExceedsMaxLength() throws Exception {
         String longName = "a".repeat(31);
         mockMvc.perform(post("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + longName + "\",\"description\":\"A nice boat\"}"))
                 .andExpect(status().isBadRequest())
@@ -247,6 +272,7 @@ class BoatControllerTest {
     @DisplayName("POST /api/v1/boats → 400 when name contains special characters")
     void createBoat_should_return400_when_nameContainsSpecialCharacters() throws Exception {
         mockMvc.perform(post("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"My-Boat!\",\"description\":\"A nice boat\"}"))
                 .andExpect(status().isBadRequest())
@@ -258,6 +284,7 @@ class BoatControllerTest {
     void createBoat_should_return400_when_descriptionExceedsMaxLength() throws Exception {
         String longDesc = "a".repeat(501);
         mockMvc.perform(post("/api/v1/boats")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"My-Boat\",\"description\":\"" + longDesc + "\"}"))
                 .andExpect(status().isBadRequest())
@@ -285,6 +312,7 @@ class BoatControllerTest {
 
         // ACT + ASSERT
         mockMvc.perform(put("/api/v1/boats/1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Updated-Boat\",\"description\":\"Updated desc\"}"))
                 .andExpect(status().isOk())
@@ -302,6 +330,7 @@ class BoatControllerTest {
 
         // ACT + ASSERT
         mockMvc.perform(put("/api/v1/boats/99")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Updated-Boat\",\"description\":\"Updated desc\"}"))
                 .andExpect(status().isNotFound())
@@ -313,6 +342,7 @@ class BoatControllerTest {
     @DisplayName("PUT /api/v1/boats/{id} → 400 when name is null")
     void updateBoat_should_return400_when_nameIsNull() throws Exception {
         mockMvc.perform(put("/api/v1/boats/1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":null,\"description\":\"Updated desc\"}"))
                 .andExpect(status().isBadRequest())
@@ -323,6 +353,7 @@ class BoatControllerTest {
     @DisplayName("PUT /api/v1/boats/{id} → 400 when name contains special characters")
     void updateBoat_should_return400_when_nameContainsSpecialCharacters() throws Exception {
         mockMvc.perform(put("/api/v1/boats/1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"My-Boat!\",\"description\":\"Updated desc\"}"))
                 .andExpect(status().isBadRequest())
@@ -334,6 +365,7 @@ class BoatControllerTest {
     void updateBoat_should_return400_when_descriptionExceedsMaxLength() throws Exception {
         String longDesc = "a".repeat(501);
         mockMvc.perform(put("/api/v1/boats/1")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"My-Boat\",\"description\":\"" + longDesc + "\"}"))
                 .andExpect(status().isBadRequest())

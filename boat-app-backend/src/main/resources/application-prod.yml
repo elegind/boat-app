@@ -8,3 +8,9 @@ spring:
     hibernate:
       ddl-auto: validate
 
+# SpringDoc / Swagger UI — disabled in production to prevent API exposure
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
