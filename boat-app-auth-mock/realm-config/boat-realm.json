@@ -1,0 +1,90 @@
+{
+  "realm": "boat-app",
+  "enabled": true,
+  "displayName": "Boat App",
+  "accessTokenLifespan": 300,
+  "ssoSessionMaxLifespan": 1800,
+  "refreshTokenMaxReuse": 0,
+  "defaultSignatureAlgorithm": "RS256",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+
+  "roles": {
+    "realm": [
+      {
+        "name": "ROLE_USER",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "ROLE_ADMIN",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
+  },
+
+  "clients": [
+    {
+      "clientId": "boat-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://localhost"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4200/*##http://localhost/*"
+      }
+    }
+  ],
+
+  "users": [
+    {
+      "username": "user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "user@boat-app.local",
+      "firstName": "Standard",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_USER"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@boat-app.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_USER", "ROLE_ADMIN"]
+    }
+  ]
+}
+
+

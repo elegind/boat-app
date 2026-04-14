@@ -8,7 +8,7 @@ A fullstack web application for managing a fleet of boats.
 ```
 docker-compose up --build
        │
-       ├─ auth-mock  (port 9000) — placeholder, ready to be replaced
+       ├─ auth-mock  (port 9000) — Keycloak 24 (OAuth2 Authorization Code + PKCE)
        ├─ postgres   (port 5432) — PostgreSQL 16
        ├─ backend    (port 8080) — Spring Boot 3 REST API
        └─ frontend   (port 4200) — Angular 20 served by nginx
@@ -301,10 +301,68 @@ docker-compose down -v
 | frontend | http://localhost:4200 | nginx — proxies `/api/` → backend:8080 |
 | backend | http://localhost:8080 | Spring Boot dev profile |
 | postgres | localhost:5432 | Persistent volume `postgres_data` |
-| auth-mock | localhost:9000 | Placeholder — always healthy |
+| auth-mock | http://localhost:9000 | Keycloak 24 — realm `boat-app` |
 
 > **nginx proxy:** all API calls from the browser route through nginx (`/api/` → `backend:8080`)
 > so there are zero CORS issues regardless of environment.
+
+---
+
+## Keycloak — `boat-app-auth-mock`
+
+Keycloak 24 is configured automatically via a realm import on startup.
+**No manual steps in the admin console are required.**
+
+### Access
+
+| URL | Description |
+|-----|-------------|
+| `http://localhost:9000` | Keycloak admin console |
+| `http://localhost:9000/realms/boat-app/.well-known/openid-configuration` | OIDC discovery endpoint |
+| `http://localhost:9000/realms/boat-app/protocol/openid-connect/certs` | JWKS — RSA public keys |
+
+**Admin console credentials:** `admin` / `admin`
+
+### Realm & Client
+
+| Setting | Value |
+|---------|-------|
+| Realm | `boat-app` |
+| Client ID | `boat-frontend` |
+| Allowed flow | Authorization Code + **PKCE (S256)** only |
+| Password grant | ❌ disabled (`directAccessGrantsEnabled: false`) |
+| Implicit flow | ❌ disabled |
+| Access token TTL | 300 s (5 min) |
+| SSO session max | 1800 s (30 min) |
+
+### Test users
+
+| Username | Password | Roles |
+|----------|----------|-------|
+| `user` | `user123` | `ROLE_USER` |
+| `admin` | `admin123` | `ROLE_USER`, `ROLE_ADMIN` |
+
+### Why PKCE is enforced
+
+`pkce.code.challenge.method: S256` is set inside the `attributes` block of the
+`boat-frontend` client. This forces Keycloak to reject any authorisation request
+that does not include a valid `code_challenge`. The Angular app must always use
+the **Authorization Code + PKCE** flow — the Password grant is intentionally
+disabled to follow OAuth2 best practices for SPAs (RFC 9700 / BCP 212).
+
+### Quick verification
+
+```bash
+# Discovery endpoint — must contain "code_challenge_methods_supported": ["S256"]
+curl http://localhost:9000/realms/boat-app/.well-known/openid-configuration | jq .
+
+# JWKS — must return at least one RSA key
+curl http://localhost:9000/realms/boat-app/protocol/openid-connect/certs | jq .
+
+# Password grant — must return 401/400 (intentionally disabled)
+curl -X POST http://localhost:9000/realms/boat-app/protocol/openid-connect/token \
+  -d "grant_type=password&client_id=boat-frontend&username=user&password=user123"
+```
 
 ---
 

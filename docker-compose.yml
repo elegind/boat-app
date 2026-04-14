@@ -1,22 +1,26 @@
 services:
 
-  # ─── Auth Mock ───────────────────────────────────────────────────────────────
-  # Placeholder — will be replaced when the real auth module is implemented.
+  # ─── Keycloak — Authorization Server (OAuth2 + PKCE) ────────────────────────
   auth-mock:
     build:
       context: ./boat-app-auth-mock
       dockerfile: Dockerfile
     container_name: boat-app-auth-mock
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "9000:9000"
     networks:
       - boat-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "echo ok"]
-      interval: 10s
+      # bash /dev/tcp: bash built-in TCP check — no external tools needed (UBI micro image)
+      # Checks that port 9000 is accepting connections (Keycloak HTTP ready)
+      test: ["CMD", "bash", "-c", "exec 6<>/dev/tcp/localhost/9000"]
+      interval: 15s
       timeout: 5s
-      retries: 3
-      start_period: 5s
+      retries: 20
+      start_period: 90s
 
   # ─── PostgreSQL ───────────────────────────────────────────────────────────────
   postgres:
@@ -54,6 +58,7 @@ services:
       POSTGRES_USER: boat
       POSTGRES_PASSWORD: boat
       TZ: UTC
+      KEYCLOAK_ISSUER_URI: http://auth-mock:9000/realms/boat-app
     depends_on:
       auth-mock:
         condition: service_healthy
