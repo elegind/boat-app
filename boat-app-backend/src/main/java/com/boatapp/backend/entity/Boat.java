@@ -2,6 +2,7 @@ package com.boatapp.backend.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 /**
@@ -26,8 +27,11 @@ public class Boat extends Auditable {
     private Long id;
 
     @NotNull
-    @Column(nullable = false)
+    @Size(max = 30)
+    @Column(nullable = false, length = 30)
     private String name;
 
+    @Size(max = 500)
+    @Column(length = 500)
     private String description;
 }
