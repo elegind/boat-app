@@ -296,6 +296,12 @@ docker-compose down
 docker-compose down -v
 ```
 
+> ⚠️ **Windows + Git Bash / MinGW64:** the long-form volume syntax (`type: volume / target:`)
+> is already used in `docker-compose.yml` to prevent Git Bash from translating the PostgreSQL
+> container path into a Windows host path (which causes a `pg_control` panic).
+> If you still encounter issues, use **PowerShell** instead of Git Bash, or prefix commands
+> with `MSYS_NO_PATHCONV=1`. If the volume is already corrupted: `docker-compose down -v`.
+
 | Service | Port | Notes |
 |---------|------|-------|
 | frontend | http://localhost:4200 | nginx — proxies `/api/` → backend:8080 |
