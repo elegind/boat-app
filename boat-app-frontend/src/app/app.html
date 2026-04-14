@@ -1,4 +1,3 @@
-@if (!isLoginPage()) {
 <mat-sidenav-container>
 
   <!-- Side bar -->
@@ -82,6 +81,18 @@
 
       <span class="flex-spacer"></span>
 
+      <!-- Authenticated user info + logout -->
+      @if (authService.currentUser(); as user) {
+        <span class="ml-auto mr-2 text-sm hidden sm:block">
+          {{ t().auth.welcome.replace('{username}', user.preferred_username) }}
+        </span>
+        <button mat-icon-button
+                (click)="authService.logout()"
+                [matTooltip]="t().auth.logout">
+          <mat-icon>logout</mat-icon>
+        </button>
+      }
+
     </mat-toolbar>
 
     <!-- Page content -->
@@ -92,6 +103,3 @@
   </mat-sidenav-content>
 
 </mat-sidenav-container>
-} @else {
-  <router-outlet />
-}

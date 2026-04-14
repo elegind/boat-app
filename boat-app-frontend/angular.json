@@ -20,6 +20,7 @@
             "browser": "src/main.ts",
             "polyfills": [],
             "tsConfig": "tsconfig.app.json",
+            "allowedCommonJsDependencies": ["angular-oauth2-oidc"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -41,7 +42,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "650kB",
+                  "maximumWarning": "750kB",
                   "maximumError": "1.5MB"
                 },
                 {

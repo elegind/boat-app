@@ -2,6 +2,7 @@
   "realm": "boat-app",
   "enabled": true,
   "displayName": "Boat App",
+  "loginTheme": "boat-app",
   "accessTokenLifespan": 300,
   "ssoSessionMaxLifespan": 1800,
   "refreshTokenMaxReuse": 0,

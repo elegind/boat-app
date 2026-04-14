@@ -83,24 +83,8 @@ export const EN_EN = {
     loading: 'Loading boats...',
   },
   auth: {
-    login: {
-      title: 'Sign in to your account',
-      subtitle: 'Enter your credentials to continue',
-      username: {
-        label: 'Username',
-        error: {
-          required: 'Username is required.',
-        },
-      },
-      password: {
-        label: 'Password',
-        error: {
-          required: 'Password is required.',
-        },
-      },
-      submit: 'Sign In',
-      loading: 'Signing in...',
-    },
+    logout: 'Logout',
+    welcome: 'Welcome, {username}',
   },
 };
 

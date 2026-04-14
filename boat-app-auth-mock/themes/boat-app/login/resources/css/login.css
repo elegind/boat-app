@@ -1,0 +1,201 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 16px;
+    color: #1c1b1f;
+    background: linear-gradient(
+        135deg,
+        #eaddff 0%,      /* --mat-sys-primary-container */
+        #fffbfe 60%,     /* --mat-sys-surface           */
+        #cef0ee 100%     /* --mat-sys-tertiary-container */
+    );
+}
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.card {
+    width: 100%;
+    max-width: 384px;
+    background: #fffbfe;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow:
+        0 2px 8px  rgba(0, 0, 0, 0.08),
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 1px 3px  rgba(0, 0, 0, 0.04);
+}
+
+.brand-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.brand-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #6750a4 0%, #006a6a 100%);
+    box-shadow:
+        0 4px 10px rgba(103, 80, 164, 0.35),
+        0 1px 3px  rgba(0, 0, 0, 0.12);
+}
+
+.brand-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    color: #fff;
+}
+
+.app-title {
+    margin: 14px 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1c1b1f;
+}
+
+.app-tagline {
+    font-size: 13px;
+    color: #49454f;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #49454f;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #79747e;
+    border-radius: 4px;
+    padding: 12px;
+    gap: 8px;
+    background: #fffbfe;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+    border: 2px solid #6750a4;
+    padding: 11px; /* compensate 1px extra border */
+    box-shadow: 0 0 0 0px transparent; /* flat — no extra ring */
+}
+
+.input-wrapper.input-error {
+    border-color: #b3261e;
+}
+
+.input-wrapper.input-error:focus-within {
+    border-color: #b3261e;
+}
+
+/* Field prefix icon — same as Angular .field-prefix-icon */
+.field-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    flex-shrink: 0;
+    color: #49454f;
+    margin-right: 4px;
+    user-select: none;
+}
+
+.input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 16px;
+    font-family: inherit;
+    color: #1c1b1f;
+}
+
+.input-wrapper input::placeholder {
+    color: #aca9b3;
+}
+
+.alert-msg {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.alert-error {
+    background: #fdecea;
+    color: #b3261e;
+}
+
+.alert-warning {
+    background: #fff8e1;
+    color: #7c6000;
+}
+
+.field-error {
+    font-size: 12px;
+    color: #b3261e;
+}
+
+.submit-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: 8px;
+    background: linear-gradient(145deg, #6750a4 0%, #006a6a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.submit-btn:hover {
+    opacity: 0.9;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+

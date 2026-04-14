@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api/v1',
+  apiUrl: '${API_URL}',
+  keycloakIssuer: '${KEYCLOAK_ISSUER_URI}',
 };
