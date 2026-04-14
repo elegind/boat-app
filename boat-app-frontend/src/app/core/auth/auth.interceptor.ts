@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
 /**
- * attaches the Bearer access token
+ * Attaches the Bearer access token
  * to every request targeting the backend API URL.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -21,4 +21,3 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req);
 };
-

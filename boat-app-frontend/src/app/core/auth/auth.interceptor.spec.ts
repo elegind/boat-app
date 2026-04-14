@@ -59,4 +59,3 @@ describe('authInterceptor', () => {
     req.flush([]);
   });
 });
-
