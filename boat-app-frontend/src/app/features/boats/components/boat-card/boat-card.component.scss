@@ -5,5 +5,9 @@
 
 .boat-card {
   height: 100%;
+
+  mat-card-actions {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
 }
 
