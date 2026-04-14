@@ -196,10 +196,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+
+                    <argLine>-Dnet.bytebuddy.experimental=true -Dapi.version=1.41</argLine>
                     <includes>
                         <include>**/*IT.java</include>
                     </includes>
+                    <environmentVariables>
+                        <!-- Forward DOCKER_HOST to the forked JVM so Testcontainers can find Docker -->
+                        <DOCKER_HOST>${env.DOCKER_HOST}</DOCKER_HOST>
+                    </environmentVariables>
                 </configuration>
                 <executions>
                     <execution>

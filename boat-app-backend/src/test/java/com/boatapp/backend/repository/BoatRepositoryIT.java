@@ -1,6 +1,7 @@
 package com.boatapp.backend.repository;
 
 import com.boatapp.backend.entity.Boat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +42,17 @@ class BoatRepositoryIT {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.sql.init.mode",                       () -> "never");
+        registry.add("spring.jpa.defer-datasource-initialization", () -> "true");
     }
 
     @Autowired
     private BoatRepository boatRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        boatRepository.deleteAll();
+    }
 
     private List<Boat> buildBoats(int count) {
         return IntStream.rangeClosed(1, count)
