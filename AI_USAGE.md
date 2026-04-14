@@ -34,7 +34,7 @@ The `@fullstack` agent is used for every task and always starts by invoking
 
 For every feature I followed this structured process:
 
-1. **Draft the task** with a clear description covering: what needs to be built,
+1. **Draft the task manually** with a clear description covering: what needs to be built,
    which parts of the code are affected, mandatory tests, error handling,
    validation rules, technical choices, data formats, component reusability,
    and acceptance criteria.
