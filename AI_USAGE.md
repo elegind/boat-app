@@ -18,7 +18,7 @@ and **executor** for code generation.
 
 With the help of AI, I created a custom `@fullstack` agent with a set of skills
 that are invoked depending on the task. These files live in `.github/agents/`
-and `.github/skills/`:
+and `.github/skills/` and follow the [Agent Skills specification](https://agentskills.io/specification):
 
 - `task-driven-development` — asks clarifying questions if needed, derives
   acceptance criteria, step by step development (backend to frontend)
@@ -356,6 +356,10 @@ after the fact.
 ---
 
 ## How I validated and corrected AI output
+
+After each task I reviewed the output carefully, ran the tests, optimize or simplify the code (refactor)
+and did manual checks before considering it done. Below are the most significant corrections and
+improvements I made throughout the project.
 
 **`Auditable` superclass:**
 AI put `createdAt` and `updatedAt` directly on the `Boat` entity. I refactored
