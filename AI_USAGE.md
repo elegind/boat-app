@@ -320,6 +320,13 @@ after the fact.
 - **Field constraints** — the decisions on which fields are mandatory,
   their maximum lengths, and the allowed character patterns were made by me,
   not generated. Business logic/constraints should not be delegated to AI.
+- **Unit and integration test coverage for critical paths** — I personally decided 
+  which critical scenarios required dedicated tests, 
+  especially around security: ensuring that
+  protected endpoints return 401 when no token is provided, 403 when the
+  role is insufficient, and that admin-only operations are correctly
+  rejected for regular users. These security invariants must be verified
+  by explicit tests.
 
 ### Methodology decisions
 
