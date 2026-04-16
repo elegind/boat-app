@@ -277,7 +277,7 @@ after the fact.
 - **Java Date type: Instant over LocalDateTime** — guarantees UTC at every level and
   is robust across different server timezones and cloud regions. AI proposed LocalDateTime,
   I decided to change it.
-- **Spring Boot 3.5 over 4** — Spring Boot 4 is too recent and third-party
+- **Spring Boot 3.4.4 over 4** — Spring Boot 4 is too recent and third-party
   libraries may not be fully aligned yet. More comfortable developing on 3.x.
 - **Java 25** — latest available version, acceptable for a demo project.
 - **Bootstrap with H2 first, then PostgreSQL** — faster initial startup,

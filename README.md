@@ -46,7 +46,7 @@ That's it. The startup order (`auth-mock → postgres → backend → frontend`)
 | Layer | Technology |
 |-------|------------|
 | Frontend | Angular 20 — Standalone, Zoneless, Signals, Angular Material 3, Tailwind CSS |
-| Backend | Java 25 · Spring Boot 3 · Spring Security (JWT/PKCE) · Spring Data JPA |
+| Backend | Java 25 · Spring Boot 3.4.4 · Spring Security (JWT/PKCE) · Spring Data JPA |
 | Database | PostgreSQL 16 |
 | Auth | Keycloak 24 — OAuth2 Authorization Code + PKCE |
 | API Docs | SpringDoc OpenAPI / Swagger UI |
